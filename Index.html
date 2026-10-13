@@ -59,18 +59,19 @@
         }
         
         .login-logo-container {
-            background-color: #000;
-            padding: 12px;
-            border-radius: 8px;
-            display: inline-block;
-            margin-bottom: 1rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            background: transparent;
+            padding: 0;
+            margin: 0 auto 1rem auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
         .login-logo-svg {
-            width: 110px;
-            height: auto;
+            width: 160px;
+            height: 100px;
             display: block;
+            object-fit: contain;
         }
         
         .login-card h2 {
@@ -213,16 +214,18 @@
         }
         
         .header-logo-box {
-            background: #000;
-            padding: 4px 8px;
-            border-radius: 4px;
+            background: transparent;
+            padding: 0;
+            margin-right: 12px;
             display: flex;
             align-items: center;
         }
         
         .header-logo-svg {
-            width: 40px;
-            height: auto;
+            width: 55px;
+            height: 40px;
+            display: block;
+            object-fit: contain;
         }
         
         .brand-text h1 {
@@ -587,8 +590,8 @@
             font-size: 1.2rem;
             color: #888;
         }
-
         /* BADGES DE ESTADO DE CONEXIÓN SQL */
+        
         .connection-status-badge {
             display: inline-flex;
             align-items: center;
@@ -601,16 +604,19 @@
             font-weight: 500;
             transition: all 0.3s ease;
         }
+        
         .connection-status-badge.online {
             border-color: #2ecc71;
             background: rgba(46, 204, 113, 0.15);
             color: #a8f5c4;
         }
+        
         .connection-status-badge.offline {
             border-color: #e74c3c;
             background: rgba(231, 76, 60, 0.15);
             color: #ffb8b8;
         }
+        
         .status-dot {
             width: 9px;
             height: 9px;
@@ -618,10 +624,12 @@
             background-color: #95a5a6;
             display: inline-block;
         }
+        
         .connection-status-badge.online .status-dot {
             background-color: #2ecc71;
             box-shadow: 0 0 8px #2ecc71;
         }
+        
         .connection-status-badge.offline .status-dot {
             background-color: #e74c3c;
             box-shadow: 0 0 8px #e74c3c;
@@ -635,12 +643,16 @@
     <div id="login-screen">
         <div class="login-card">
             <div class="login-logo-container">
-                <svg class="login-logo-svg" viewBox="0 0 500 380" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="500" height="380" fill="#000000" />
-                    <path d="M 50 50 L 160 50 L 160 270 L 270 270 L 270 170 L 200 170 L 200 110 L 330 110 L 330 310 L 50 310 Z" fill="#0A4C95" />
-                    <path d="M 340 50 L 450 50 L 450 310 L 340 310 Z" fill="#0A4C95" />
-                    <path d="M 390 110 L 450 110 L 450 170 L 390 170 Z" fill="#000000" />
-                </svg>
+                <svg class="login-logo-svg" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <!-- Letra U -->
+        <path d="M 120 110 L 175 110 L 175 235 L 230 235 L 230 155 L 285 155 L 285 285 L 120 285 Z" fill="#002B49" />
+        <!-- Letra N -->
+        <path d="M 200 110 L 395 110 L 395 285 L 340 285 L 340 165 L 285 165 L 285 245 L 230 245 L 230 110 Z" fill="#002B49" />
+        <!-- Letra I (Cuerpo) -->
+        <path d="M 410 170 L 465 170 L 465 285 L 410 285 Z" fill="#002B49" />
+        <!-- Punto de la I -->
+        <path d="M 410 110 L 465 110 L 465 155 L 410 155 Z" fill="#002B49" />
+    </svg>
             </div>
             <h2>Biblioteca Central Ing. Julio Pérez</h2>
             <h5>Universidad Nacional de Ingeniería</h5>
@@ -686,12 +698,16 @@
         <header>
             <div class="brand-container">
                 <div class="header-logo-box">
-                    <svg class="header-logo-svg" viewBox="0 0 500 380" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="500" height="380" fill="#000000" />
-                        <path d="M 50 50 L 160 50 L 160 270 L 270 270 L 270 170 L 200 170 L 200 110 L 330 110 L 330 310 L 50 310 Z" fill="#0A4C95" />
-                        <path d="M 340 50 L 450 50 L 450 310 L 340 310 Z" fill="#0A4C95" />
-                        <path d="M 390 110 L 450 110 L 450 170 L 390 170 Z" fill="#000000" />
-                    </svg>
+                    <svg class="header-logo-svg" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+        <!-- Letra U -->
+        <path d="M 120 110 L 175 110 L 175 235 L 230 235 L 230 155 L 285 155 L 285 285 L 120 285 Z" fill="#FFFFFF" />
+        <!-- Letra N -->
+        <path d="M 200 110 L 395 110 L 395 285 L 340 285 L 340 165 L 285 165 L 285 245 L 230 245 L 230 110 Z" fill="#FFFFFF" />
+        <!-- Letra I (Cuerpo) -->
+        <path d="M 410 170 L 465 170 L 465 285 L 410 285 Z" fill="#FFFFFF" />
+        <!-- Punto de la I -->
+        <path d="M 410 110 L 465 110 L 465 155 L 410 155 Z" fill="#FFFFFF" />
+    </svg>
                 </div>
                 <div class="brand-text">
                     <h1>Sistema de Control de Biblioteca</h1>
@@ -1083,16 +1099,26 @@
             const headerText = document.getElementById("header-db-text");
 
             try {
-                const response = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(4000) });
+                const response = await fetch(`${API_BASE}/status`, {
+                    signal: AbortSignal.timeout(4000)
+                });
                 if (response.ok) {
                     const data = await response.json();
                     isConnectedToDB = true;
 
                     const estadoTxt = `🟢 Conectado: SQL Server (${data.datos ? data.datos.baseDeDatos : 'SistemaBibliotecaDB'})`;
-                    if (loginBadge) { loginBadge.className = "connection-status-badge online"; }
-                    if (loginText) { loginText.innerText = estadoTxt; }
-                    if (headerBadge) { headerBadge.className = "connection-status-badge online"; }
-                    if (headerText) { headerText.innerText = estadoTxt; }
+                    if (loginBadge) {
+                        loginBadge.className = "connection-status-badge online";
+                    }
+                    if (loginText) {
+                        loginText.innerText = estadoTxt;
+                    }
+                    if (headerBadge) {
+                        headerBadge.className = "connection-status-badge online";
+                    }
+                    if (headerText) {
+                        headerText.innerText = estadoTxt;
+                    }
                     return true;
                 }
             } catch (err) {
@@ -1101,10 +1127,18 @@
 
             isConnectedToDB = false;
             const estadoOffline = `🔴 Desconectado (Inicie BibliotecaAPI en puerto 5087)`;
-            if (loginBadge) { loginBadge.className = "connection-status-badge offline"; }
-            if (loginText) { loginText.innerText = estadoOffline; }
-            if (headerBadge) { headerBadge.className = "connection-status-badge offline"; }
-            if (headerText) { headerText.innerText = `🔴 SQL Desconectado`; }
+            if (loginBadge) {
+                loginBadge.className = "connection-status-badge offline";
+            }
+            if (loginText) {
+                loginText.innerText = estadoOffline;
+            }
+            if (headerBadge) {
+                headerBadge.className = "connection-status-badge offline";
+            }
+            if (headerText) {
+                headerText.innerText = `🔴 SQL Desconectado`;
+            }
             return false;
         }
 
@@ -1187,7 +1221,11 @@
             try {
                 const f = new Date(fechaStr);
                 if (isNaN(f.getTime())) return fechaStr;
-                return f.toLocaleDateString('es-NI', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                return f.toLocaleDateString('es-NI', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
             } catch (e) {
                 return fechaStr;
             }
@@ -1253,8 +1291,13 @@
 
                     const resp = await fetch(`${API_BASE}/auth/login`, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ usuario: userInput, contrasena: passInput })
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            usuario: userInput,
+                            contrasena: passInput
+                        })
                     });
                     const data = await resp.json();
 
@@ -1466,7 +1509,9 @@
 
                     const response = await fetch(url, {
                         method: method,
-                        headers: { "Content-Type": "application/json" },
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
                         body: JSON.stringify(libroData)
                     });
 
@@ -1518,7 +1563,9 @@
 
             if (isConnectedToDB) {
                 try {
-                    const resp = await fetch(`${API_BASE}/libros/${id}`, { method: "DELETE" });
+                    const resp = await fetch(`${API_BASE}/libros/${id}`, {
+                        method: "DELETE"
+                    });
                     const resJson = await resp.json();
                     if (!resp.ok) throw new Error(resJson.mensaje || "Error al eliminar en SQL Server");
 
@@ -1549,7 +1596,9 @@
                 try {
                     const resp = await fetch(`${API_BASE}/estudiantes`, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
                         body: JSON.stringify(estData)
                     });
                     const resJson = await resp.json();
@@ -1569,7 +1618,12 @@
                     alert("⚠️ Ese carnet ya está registrado.");
                     return;
                 }
-                estudiantes.push({ carnet: estData.carnet, name: estData.nombreCompleto, career: estData.carrera, year: estData.anioLectivo });
+                estudiantes.push({
+                    carnet: estData.carnet,
+                    name: estData.nombreCompleto,
+                    career: estData.carrera,
+                    year: estData.anioLectivo
+                });
                 guardarRespaldoLocalStorage();
                 cerrarModal("modal-estudiante");
                 actualizarTodo();
@@ -1582,7 +1636,9 @@
 
             if (isConnectedToDB) {
                 try {
-                    const resp = await fetch(`${API_BASE}/estudiantes/${encodeURIComponent(carnet)}`, { method: "DELETE" });
+                    const resp = await fetch(`${API_BASE}/estudiantes/${encodeURIComponent(carnet)}`, {
+                        method: "DELETE"
+                    });
                     const resJson = await resp.json();
                     if (!resp.ok) throw new Error(resJson.mensaje || "Error al eliminar en SQL Server");
 
@@ -1613,8 +1669,14 @@
                 try {
                     const resp = await fetch(`${API_BASE}/prestamos`, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ carnetEstudiante: carnet, idLibro: idLibro, diasPrestamo: 15 })
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            carnetEstudiante: carnet,
+                            idLibro: idLibro,
+                            diasPrestamo: 15
+                        })
                     });
                     const resJson = await resp.json();
                     if (!resp.ok) throw new Error(resJson.mensaje || "Error al procesar el préstamo en SQL Server");
@@ -1662,7 +1724,9 @@
 
             if (isConnectedToDB) {
                 try {
-                    const resp = await fetch(`${API_BASE}/prestamos/${id}/devolver`, { method: "PUT" });
+                    const resp = await fetch(`${API_BASE}/prestamos/${id}/devolver`, {
+                        method: "PUT"
+                    });
                     const resJson = await resp.json();
                     if (!resp.ok) throw new Error(resJson.mensaje || "Error al devolver libro en SQL Server");
 
@@ -1702,7 +1766,9 @@
                 try {
                     const resp = await fetch(`${API_BASE}/administradores`, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
                         body: JSON.stringify(adminData)
                     });
                     const resJson = await resp.json();
@@ -1742,7 +1808,9 @@
 
             if (isConnectedToDB && id) {
                 try {
-                    const resp = await fetch(`${API_BASE}/administradores/${id}`, { method: "DELETE" });
+                    const resp = await fetch(`${API_BASE}/administradores/${id}`, {
+                        method: "DELETE"
+                    });
                     const resJson = await resp.json();
                     if (!resp.ok) throw new Error(resJson.mensaje || "Error al eliminar administrador");
 
@@ -1802,38 +1870,42 @@
             renderizarLibros(filtrados);
         }
 
+
         // EXPORTADOR DE ARCHIVO SCRIPT .SQL
         function exportarScriptSQL() {
-            let sqlContent = `-- ==========================================================\n`;
-            sqlContent += `-- SCRIPT DE INSERCIÓN MASIVA DE DATOS PARA SQL SERVER\n`;
-            sqlContent += `-- Base de Datos: SistemaBibliotecaDB\n`;
-            sqlContent += `-- Generado desde el Sistema Web UNI conectado a SQL Server\n`;
-            sqlContent += `-- ==========================================================\n\n`;
+            let sqlContent = `-- ====================================================================\n`;
+            sqlContent += `-- SCRIPT DE CARGA MASIVA DE DATOS - BIBLIOTECA UNI\n`;
+            sqlContent += `-- ====================================================================\n\n`;
             sqlContent += `USE SistemaBibliotecaDB;\nGO\n\n`;
 
-            if (books.length > 0) {
-                sqlContent += `-- 1. INSERTAR LIBROS (${books.length} registros)\n`;
-                sqlContent += `INSERT INTO dbo.Libros (Isbn, Titulo, Autor, AnioPublicacion, Categoria, Stock) VALUES\n`;
-                const librosRows = books.map(b =>
-                    `('${(b.isbn || '').replace(/'/g, "''")}', '${(b.titulo || '').replace(/'/g, "''")}', '${(b.autor || '').replace(/'/g, "''")}', 2024, '${(b.categoria || '').replace(/'/g, "''")}', ${b.stock || 1})`
-                ).join(',\n');
-                sqlContent += librosRows + `;\nGO\n\n`;
-            }
+            sqlContent += `-- INSERCIÓN DE LIBROS\n`;
+            libros.forEach(l => {
+                const tituloEsc = l.titulo.replace(/'/g, "''");
+                const autorEsc = l.autor.replace(/'/g, "''");
+                const catEsc = l.categoria.replace(/'/g, "''");
+                sqlContent += `IF NOT EXISTS (SELECT 1 FROM dbo.Libros WHERE Isbn = '${l.isbn}')\n`;
+                sqlContent += `    INSERT INTO dbo.Libros (Isbn, Titulo, Autor, AnioPublicacion, Categoria, Stock) VALUES ('${l.isbn}', '${tituloEsc}', '${autorEsc}', ${l.anio || 2024}, '${catEsc}', ${l.stock});\n`;
+            });
 
-            if (estudiantes.length > 0) {
-                sqlContent += `-- 2. INSERTAR ESTUDIANTES (${estudiantes.length} registros)\n`;
-                sqlContent += `INSERT INTO dbo.Estudiantes (Carnet, NombreCompleto, Carrera, AnioLectivo) VALUES\n`;
-                const estRows = estudiantes.map(s =>
-                    `('${s.carnet}', '${(s.name || '').replace(/'/g, "''")}', '${(s.career || '').replace(/'/g, "''")}', '${s.year}')`
-                ).join(',\n');
-                sqlContent += estRows + `;\nGO\n\n`;
-            }
+            sqlContent += `\n-- INSERCIÓN DE ESTUDIANTES\n`;
+            estudiantes.forEach(e => {
+                const nomEsc = e.nombre.replace(/'/g, "''");
+                sqlContent += `IF NOT EXISTS (SELECT 1 FROM dbo.Estudiantes WHERE Carnet = '${e.carnet}')\n`;
+                sqlContent += `    INSERT INTO dbo.Estudiantes (Carnet, NombreCompleto, Carrera, AnioLectivo) VALUES ('${e.carnet}', '${nomEsc}', '${e.carrera}', '${e.anio}');\n`;
+            });
 
-            const blob = new Blob([sqlContent], { type: 'text/sql' });
+            sqlContent += `\nGO\nPRINT '✅ Carga Masiva completada con éxito.';\n`;
+
+            const blob = new Blob([sqlContent], {
+                type: 'text/sql'
+            });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = 'CargaMasiva_Biblioteca_UNI.sql';
+            document.body.appendChild(link);
             link.click();
+            link.remove();
+            URL.revokeObjectURL(link.href);
 
             alert("✅ ¡Script '.sql' generado con éxito!\n\nSe ha descargado el archivo 'CargaMasiva_Biblioteca_UNI.sql' en tu computadora.");
         }
