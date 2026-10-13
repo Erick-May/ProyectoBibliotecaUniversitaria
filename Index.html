@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Control de Biblioteca - UNI</title>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+         :root {
+            --uni-navy: #002B49;
+            --uni-dark-blue: #001A2D;
+            --uni-gold: #D4AF37;
+            --uni-light-gold: #F4E8C1;
+            --uni-red: #8B0000;
+            --uni-bg: #F4F6F9;
+            --uni-card: #FFFFFF;
+            --uni-text: #2C3E50;
+            --uni-border: #E2E8F0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--uni-bg);
+            color: var(--uni-text);
+            min-height: 100vh;
+        }
+        /* --- PANTALLA DE LOGIN --- */
+        
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--uni-dark-blue) 0%, var(--uni-navy) 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .login-card {
+            background: white;
+            width: 440px;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            border-top: 6px solid var(--uni-gold);
+        }
+        
+        .login-logo-container {
+            background-color: #000;
+            padding: 12px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .login-logo-svg {
+            width: 110px;
+            height: auto;
+            display: block;
+        }
+        
+        .login-card h2 {
+            color: var(--uni-navy);
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+        
+        .login-card h5 {
+            color: var(--uni-gold);
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .form-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: var(--uni-navy);
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .input-group i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+        }
+        
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 0.75rem 0.75rem 0.75rem 2.4rem;
+            border: 1px solid var(--uni-border);
+            border-radius: 6px;
+            outline: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus,
+        .input-group select:focus {
+            border-color: var(--uni-navy);
+            box-shadow: 0 0 0 3px rgba(0, 43, 73, 0.1);
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--uni-navy);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 1rem;
+        }
+        
+        .btn-login:hover {
+            background-color: #001f35;
+        }
+        
+        .login-footer {
+            margin-top: 1.5rem;
+            font-size: 0.75rem;
+            color: #777;
+            background: #f8fafc;
+            padding: 0.6rem;
+            border-radius: 6px;
+        }
+        /* --- OVERLAY DE CARGA --- */
+        
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 26, 45, 0.95);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            color: white;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 6px solid rgba(212, 175, 55, 0.2);
+            border-top-color: var(--uni-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1.5rem;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        /* --- DASHBOARD LAYOUT --- */
+        
+        #app-layout {
+            display: none;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        
+        header {
+            background-color: var(--uni-navy);
+            color: white;
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--uni-gold);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .header-logo-box {
+            background: #000;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-logo-svg {
+            width: 40px;
+            height: auto;
+        }
+        
+        .brand-text h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+        
+        .brand-text span {
+            font-size: 0.75rem;
+            color: var(--uni-gold);
+            letter-spacing: 0.5px;
+        }
+        
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+        
+        .time-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            text-align: right;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .time-box div:first-child {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--uni-gold);
+        }
+        
+        .time-box div:last-child {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            background-color: var(--uni-gold);
+            color: var(--uni-navy);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 700;
+        }
+        
+        .btn-logout {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-logout:hover {
+            background: var(--uni-red);
+            border-color: var(--uni-red);
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+        }
+        
+        aside {
+            width: 250px;
+            background: white;
+            border-right: 1px solid var(--uni-border);
+            padding: 1.5rem 0;
+        }
+        
+        .nav-list {
+            list-style: none;
+        }
+        
+        .nav-item {
+            padding: 0.8rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: #555;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+        
+        .nav-item:hover,
+        .nav-item.active {
+            background-color: rgba(0, 43, 73, 0.05);
+            color: var(--uni-navy);
+            border-left-color: var(--uni-gold);
+            font-weight: 600;
+        }
+        
+        main {
+            flex: 1;
+            padding: 1.8rem;
+            overflow-y: auto;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 1.2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 4px solid var(--uni-navy);
+        }
+        
+        .metric-card.gold {
+            border-left-color: var(--uni-gold);
+        }
+        
+        .metric-card.red {
+            border-left-color: var(--uni-red);
+        }
+        
+        .metric-info h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--uni-navy);
+        }
+        
+        .metric-info p {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .metric-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #f0f4f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--uni-navy);
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--uni-border);
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--uni-navy);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .search-bar input {
+            padding: 0.5rem 0.8rem;
+            border: 1px solid var(--uni-border);
+            border-radius: 4px;
+            outline: none;
+            font-size: 0.85rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--uni-navy);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: background 0.2s;
+        }
+        
+        .btn-gold {
+            background-color: var(--uni-gold);
+            color: var(--uni-navy);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        
+        .btn-primary:hover {
+            background-color: #001f35;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        .btn-action {
+            padding: 0.35rem 0.6rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-right: 0.2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+        
+        .btn-edit {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .btn-delete {
+            background-color: var(--uni-red);
+            color: white;
+        }
+        
+        .btn-return {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        
+        th,
+        td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--uni-border);
+        }
+        
+        th {
+            background-color: #f8fafc;
+            color: var(--uni-navy);
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        .badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #E6F4EA;
+            color: #137333;
+        }
+        
+        .badge-warning {
+            background: #FEF7E0;
+            color: #B06000;
+        }
+        
+        .badge-danger {
+            background: #FCE8E6;
+            color: #C5221F;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        /* MODAL */
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            width: 520px;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--uni-border);
+            padding-bottom: 0.5rem;
+        }
+        
+        .close-modal {
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #888;
+        }
+
+        /* BADGES DE ESTADO DE CONEXIÓN SQL */
+        .connection-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 0.35rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .connection-status-badge.online {
+            border-color: #2ecc71;
+            background: rgba(46, 204, 113, 0.15);
+            color: #a8f5c4;
+        }
+        .connection-status-badge.offline {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.15);
+            color: #ffb8b8;
+        }
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background-color: #95a5a6;
+            display: inline-block;
+        }
+        .connection-status-badge.online .status-dot {
+            background-color: #2ecc71;
+            box-shadow: 0 0 8px #2ecc71;
+        }
+        .connection-status-badge.offline .status-dot {
+            background-color: #e74c3c;
+            box-shadow: 0 0 8px #e74c3c;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ==================== PANTALLA DE LOGIN ==================== -->
+    <div id="login-screen">
+        <div class="login-card">
+            <div class="login-logo-container">
+                <svg class="login-logo-svg" viewBox="0 0 500 380" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="500" height="380" fill="#000000" />
+                    <path d="M 50 50 L 160 50 L 160 270 L 270 270 L 270 170 L 200 170 L 200 110 L 330 110 L 330 310 L 50 310 Z" fill="#0A4C95" />
+                    <path d="M 340 50 L 450 50 L 450 310 L 340 310 Z" fill="#0A4C95" />
+                    <path d="M 390 110 L 450 110 L 450 170 L 390 170 Z" fill="#000000" />
+                </svg>
+            </div>
+            <h2>Biblioteca Central Ing. Julio Pérez</h2>
+            <h5>Universidad Nacional de Ingeniería</h5>
+
+            <form id="form-login" onsubmit="event.preventDefault(); iniciarSesion();">
+                <div class="form-group">
+                    <label>Usuario / Carnet</label>
+                    <div class="input-group">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" id="login-user" placeholder="Ej: admin o montoya" value="admin" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="login-pass" placeholder="••••••••" value="1234" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" id="btn-login-submit">
+                    <i class="fa-solid fa-right-to-bracket"></i> Ingresar al Sistema
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <p style="font-size: 0.8rem; color: #7f8c8d; margin-top: 1rem;">© Universidad Nacional de Ingeniería • Sistema Bibliotecario</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== OVERLAY DE CARGA ==================== -->
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <h3 style="letter-spacing: 1px; font-weight: 600;">Cargando Sistema de Biblioteca...</h3>
+        <p id="loading-subtext" style="font-size: 0.85rem; color: var(--uni-gold); margin-top: 0.5rem;">Cargando información del catálogo institucional...</p>
+    </div>
+
+    <!-- ==================== APLICACIÓN PRINCIPAL ==================== -->
+    <div id="app-layout">
+        <!-- HEADER -->
+        <header>
+            <div class="brand-container">
+                <div class="header-logo-box">
+                    <svg class="header-logo-svg" viewBox="0 0 500 380" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="500" height="380" fill="#000000" />
+                        <path d="M 50 50 L 160 50 L 160 270 L 270 270 L 270 170 L 200 170 L 200 110 L 330 110 L 330 310 L 50 310 Z" fill="#0A4C95" />
+                        <path d="M 340 50 L 450 50 L 450 310 L 340 310 Z" fill="#0A4C95" />
+                        <path d="M 390 110 L 450 110 L 450 170 L 390 170 Z" fill="#000000" />
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>Sistema de Control de Biblioteca</h1>
+                    <span>UNIVERSIDAD NACIONAL DE INGENIERÍA</span>
+                </div>
+            </div>
+
+            <div class="header-info">
+                <div class="time-box">
+                    <div id="clock-time">00:00:00 AM</div>
+                    <div id="clock-date">Cargando fecha...</div>
+                </div>
+
+                <div class="user-profile">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.85rem;" id="user-display-name">Administrador</div>
+                        <div style="font-size: 0.7rem; color: var(--uni-gold);" id="user-display-role">SuperAdmin</div>
+                    </div>
+                    <button class="btn-logout" onclick="cerrarSesion()" title="Cerrar Sesión">
+                        <i class="fa-solid fa-power-off"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-container">
+            <!-- SIDEBAR -->
+            <aside>
+                <ul class="nav-list">
+                    <li class="nav-item active" onclick="cambiarPestana('dashboard', this)">
+                        <i class="fa-solid fa-chart-line"></i> Dashboard
+                    </li>
+                    <li class="nav-item" onclick="cambiarPestana('libros', this)">
+                        <i class="fa-solid fa-book"></i> Catálogo de Libros
+                    </li>
+                    <li class="nav-item" onclick="cambiarPestana('prestamos', this)">
+                        <i class="fa-solid fa-hand-holding-hand"></i> Préstamos
+                    </li>
+                    <li class="nav-item" onclick="cambiarPestana('estudiantes', this)">
+                        <i class="fa-solid fa-graduation-cap"></i> Estudiantes
+                    </li>
+                    <li class="nav-item" onclick="cambiarPestana('administradores', this)">
+                        <i class="fa-solid fa-user-shield"></i> Administradores
+                    </li>
+                </ul>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <main>
+                <!-- MÉTRICAS -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <h3 id="stat-total-libros">0</h3>
+                            <p>Total de Ejemplares</p>
+                        </div>
+                        <div class="metric-icon"><i class="fa-solid fa-book-bookmark"></i></div>
+                    </div>
+                    <div class="metric-card gold">
+                        <div class="metric-info">
+                            <h3 id="stat-prestamos-activos">0</h3>
+                            <p>Préstamos Activos</p>
+                        </div>
+                        <div class="metric-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    </div>
+                    <div class="metric-card red">
+                        <div class="metric-info">
+                            <h3 id="stat-estudiantes">0</h3>
+                            <p>Estudiantes Registrados</p>
+                        </div>
+                        <div class="metric-icon"><i class="fa-solid fa-users"></i></div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-info">
+                            <h3 id="stat-admins">0</h3>
+                            <p>Administradores</p>
+                        </div>
+                        <div class="metric-icon"><i class="fa-solid fa-user-gear"></i></div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA: DASHBOARD -->
+                <div id="tab-dashboard" class="tab-content active">
+                    <div class="content-card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-fire"></i> Libros Recientemente Agregados</div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ISBN</th>
+                                    <th>Título</th>
+                                    <th>Autor</th>
+                                    <th>Categoría</th>
+                                    <th>Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl-recent-books">
+                                <!-- Llenado dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA: CATÁLOGO DE LIBROS -->
+                <div id="tab-libros" class="tab-content">
+                    <div class="content-card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-book"></i> Catálogo Completo de Libros</div>
+                            <div class="search-bar">
+                                <input type="text" id="search-book" placeholder="Buscar por título o ISBN..." onkeyup="filtrarLibros()">
+                                <button class="btn-primary" onclick="abrirModalLibro()"><i class="fa-solid fa-plus"></i> Nuevo Libro</button>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>ISBN</th>
+                                    <th>Título</th>
+                                    <th>Autor</th>
+                                    <th>Categoría</th>
+                                    <th>Stock</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl-libros">
+                                <!-- Llenado dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA: PRÉSTAMOS -->
+                <div id="tab-prestamos" class="tab-content">
+                    <div class="content-card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-list-check"></i> Control de Préstamos y Devoluciones</div>
+                            <button class="btn-primary" onclick="abrirModalPrestamo()"><i class="fa-solid fa-plus"></i> Registrar Préstamo</button>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Carnet</th>
+                                    <th>Estudiante</th>
+                                    <th>Libro</th>
+                                    <th>Fecha Préstamo</th>
+                                    <th>Fecha Límite</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl-prestamos">
+                                <!-- Llenado dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA: ESTUDIANTES -->
+                <div id="tab-estudiantes" class="tab-content">
+                    <div class="content-card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-graduation-cap"></i> Padrón de Estudiantes Registrados</div>
+                            <button class="btn-primary" onclick="abrirModalEstudiante()"><i class="fa-solid fa-user-plus"></i> Nuevo Estudiante</button>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Carnet</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Carrera</th>
+                                    <th>Año</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl-estudiantes">
+                                <!-- Llenado dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA: ADMINISTRADORES -->
+                <div id="tab-administradores" class="tab-content">
+                    <div class="content-card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="fa-solid fa-user-shield"></i> Gestión de Administradores del Sistema</div>
+                            <button class="btn-primary" onclick="abrirModalAdmin()"><i class="fa-solid fa-user-plus"></i> Añadir Administrador</button>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Rol</th>
+                                    <th>Fecha Registro</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl-admins">
+                                <!-- Llenado dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ==================== MODALES ==================== -->
+    <!-- MODAL REGISTRAR/EDITAR LIBRO -->
+    <div id="modal-libro" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-libro-title"><i class="fa-solid fa-book"></i> Agregar Nuevo Libro</h3>
+                <span class="close-modal" onclick="cerrarModal('modal-libro')">&times;</span>
+            </div>
+            <form id="formLibroModal" onsubmit="guardarLibro(event)">
+                <input type="hidden" id="txtIdLibro" value="0">
+                <div class="form-group">
+                    <label>Título del Libro</label>
+                    <input type="text" id="txtTitulo" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <div class="form-group">
+                    <label>Autor</label>
+                    <input type="text" id="txtAutor" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <div class="form-group">
+                    <label>ISBN</label>
+                    <input type="text" id="txtIsbn" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <div style="display:flex; gap:1rem;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Categoría</label>
+                        <input type="text" id="txtCategoria" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                    </div>
+                    <div class="form-group" style="width:100px;">
+                        <label>Stock</label>
+                        <input type="number" id="txtStock" min="1" value="5" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%; margin-top:1rem; justify-content:center;">Guardar Libro</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL NUEVO ESTUDIANTE -->
+    <div id="modal-estudiante" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-graduation-cap"></i> Registrar Estudiante</h3>
+                <span class="close-modal" onclick="cerrarModal('modal-estudiante')">&times;</span>
+            </div>
+            <form onsubmit="guardarEstudiante(event)">
+                <div class="form-group">
+                    <label>Carnet</label>
+                    <input type="text" id="est-carnet" placeholder="Ej: 2023-0012U" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="est-nombre" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <div class="form-group">
+                    <label>Carrera</label>
+                    <input type="text" id="est-carrera" placeholder="Ej: Ing. de Sistemas" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <div class="form-group">
+                    <label>Año Lectivo</label>
+                    <select id="est-anio" style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                        <option value="1ro">1ro</option>
+                        <option value="2do">2do</option>
+                        <option value="3ro">3ro</option>
+                        <option value="4to">4to</option>
+                        <option value="5to">5to</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%; margin-top:1rem; justify-content:center;">Guardar Estudiante</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL REGISTRAR PRÉSTAMO -->
+    <div id="modal-prestamo" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-hand-holding-hand"></i> Registrar Nuevo Préstamo</h3>
+                <span class="close-modal" onclick="cerrarModal('modal-prestamo')">&times;</span>
+            </div>
+            <form id="form-prestamo" onsubmit="guardarPrestamo(event)">
+                <div class="form-group">
+                    <label>Carnet del Estudiante</label>
+                    <input type="text" id="prestamo-carnet" placeholder="Ej: 2023-0012U" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <div class="form-group">
+                    <label>Seleccionar Libro</label>
+                    <select id="prestamo-libro" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                        <option value="">-- Seleccione un libro --</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%; margin-top:1rem; justify-content:center;">Guardar Préstamo</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL NUEVO ADMINISTRADOR -->
+    <div id="modal-admin" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-user-shield"></i> Registrar Nuevo Administrador</h3>
+                <span class="close-modal" onclick="cerrarModal('modal-admin')">&times;</span>
+            </div>
+            <form onsubmit="event.preventDefault(); guardarAdmin();">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="new-admin-name" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" id="new-admin-user" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="new-admin-pass" required style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                </div>
+                <div class="form-group">
+                    <label>Rol asignado</label>
+                    <select id="new-admin-role" style="width:100%; padding:0.5rem; border:1px solid #ccc; border-radius:4px;">
+                        <option value="Administrador">Administrador de Biblioteca</option>
+                        <option value="SuperAdmin">SuperAdministrador</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width:100%; margin-top:1rem; justify-content:center;">Guardar Administrador</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== LÓGICA JAVASCRIPT CONEXIÓN SQL SERVER ==================== -->
+    <script>
+        // Configuración de la API REST de persistencia
+        const API_BASE = window.location.origin.includes("5087") ? "/api" : "http://localhost:5087/api";
+
+        // Estado del sistema en memoria sincronizado con SQL Server
+        let books = [];
+        let estudiantes = [];
+        let prestamos = [];
+        let admins = [];
+        let isConnectedToDB = false;
+
+        // INICIALIZACIÓN
+        window.onload = async function() {
+            iniciarReloj();
+            await verificarConexionDB();
+            if (isConnectedToDB) {
+                await cargarDatosDesdeServidor();
+            } else {
+                cargarDesdeLocalStorage();
+                actualizarTodo();
+            }
+        };
+
+        function iniciarReloj() {
+            setInterval(() => {
+                const now = new Date();
+                const clockTime = document.getElementById("clock-time");
+                const clockDate = document.getElementById("clock-date");
+                if (clockTime) clockTime.innerText = now.toLocaleTimeString('es-NI');
+                if (clockDate) clockDate.innerText = now.toLocaleDateString('es-NI', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }, 1000);
+        }
+
+        // ============================================================
+        // 1. VERIFICACIÓN DE ESTADO Y CONECTIVIDAD CON SQL SERVER
+        // ============================================================
+        async function verificarConexionDB() {
+            const loginBadge = document.getElementById("login-db-badge");
+            const loginText = document.getElementById("login-db-text");
+            const headerBadge = document.getElementById("header-db-badge");
+            const headerText = document.getElementById("header-db-text");
+
+            try {
+                const response = await fetch(`${API_BASE}/status`, { signal: AbortSignal.timeout(4000) });
+                if (response.ok) {
+                    const data = await response.json();
+                    isConnectedToDB = true;
+
+                    const estadoTxt = `🟢 Conectado: SQL Server (${data.datos ? data.datos.baseDeDatos : 'SistemaBibliotecaDB'})`;
+                    if (loginBadge) { loginBadge.className = "connection-status-badge online"; }
+                    if (loginText) { loginText.innerText = estadoTxt; }
+                    if (headerBadge) { headerBadge.className = "connection-status-badge online"; }
+                    if (headerText) { headerText.innerText = estadoTxt; }
+                    return true;
+                }
+            } catch (err) {
+                console.warn("API de persistencia no detectada. Operando en modo local:", err);
+            }
+
+            isConnectedToDB = false;
+            const estadoOffline = `🔴 Desconectado (Inicie BibliotecaAPI en puerto 5087)`;
+            if (loginBadge) { loginBadge.className = "connection-status-badge offline"; }
+            if (loginText) { loginText.innerText = estadoOffline; }
+            if (headerBadge) { headerBadge.className = "connection-status-badge offline"; }
+            if (headerText) { headerText.innerText = `🔴 SQL Desconectado`; }
+            return false;
+        }
+
+        // ============================================================
+        // 2. CARGA DE DATOS DESDE LA BASE DE DATOS SQL SERVER
+        // ============================================================
+        async function cargarDatosDesdeServidor() {
+            try {
+                const [librosRes, prestamosRes, estRes, adminsRes, statsRes] = await Promise.all([
+                    fetch(`${API_BASE}/libros`).then(r => r.ok ? r.json() : []),
+                    fetch(`${API_BASE}/prestamos`).then(r => r.ok ? r.json() : []),
+                    fetch(`${API_BASE}/estudiantes`).then(r => r.ok ? r.json() : []),
+                    fetch(`${API_BASE}/administradores`).then(r => r.ok ? r.json() : []),
+                    fetch(`${API_BASE}/dashboard/stats`).then(r => r.ok ? r.json() : null)
+                ]);
+
+                books = librosRes.map(l => ({
+                    id: l.id,
+                    isbn: l.isbn,
+                    titulo: l.titulo,
+                    autor: l.autor,
+                    categoria: l.categoria,
+                    stock: l.stock,
+                    anioPublicacion: l.anioPublicacion
+                }));
+
+                prestamos = prestamosRes.map(p => ({
+                    id: p.idPrestamo,
+                    carnet: p.carnetEstudiante,
+                    estudiante: p.nombreEstudiante,
+                    carrera: p.carrera,
+                    idLibro: p.idLibro,
+                    libro: p.tituloLibro,
+                    isbn: p.isbn,
+                    fechaPrestamo: formatearFecha(p.fechaPrestamo),
+                    fechaLimite: formatearFecha(p.fechaLimite),
+                    estado: p.estado,
+                    diasRetraso: p.diasMora
+                }));
+
+                estudiantes = estRes.map(s => ({
+                    carnet: s.carnet,
+                    name: s.nombreCompleto,
+                    career: s.carrera,
+                    year: s.anioLectivo
+                }));
+
+                admins = adminsRes.map(a => ({
+                    id: a.id,
+                    user: a.usuario,
+                    name: a.nombreCompleto,
+                    role: a.rol,
+                    date: formatearFecha(a.fechaRegistro),
+                    status: "Activo"
+                }));
+
+                renderizarLibros(books);
+                renderizarPrestamos(prestamos);
+                renderizarEstudiantes(estudiantes);
+                renderizarAdmins();
+
+                if (statsRes) {
+                    document.getElementById("stat-total-libros").innerText = statsRes.totalLibros;
+                    document.getElementById("stat-prestamos-activos").innerText = statsRes.prestamosActivos;
+                    document.getElementById("stat-estudiantes").innerText = statsRes.totalEstudiantes;
+                    document.getElementById("stat-admins").innerText = statsRes.totalAdministradores;
+                } else {
+                    actualizarMetricasLocales();
+                }
+
+                // Guardar respaldo local por seguridad
+                guardarRespaldoLocalStorage();
+            } catch (error) {
+                console.error("Error al cargar datos desde SQL Server:", error);
+            }
+        }
+
+        function formatearFecha(fechaStr) {
+            if (!fechaStr) return "";
+            try {
+                const f = new Date(fechaStr);
+                if (isNaN(f.getTime())) return fechaStr;
+                return f.toLocaleDateString('es-NI', { year: 'numeric', month: '2-digit', day: '2-digit' });
+            } catch (e) {
+                return fechaStr;
+            }
+        }
+
+        function actualizarMetricasLocales() {
+            document.getElementById("stat-total-libros").innerText = books.reduce((s, b) => s + (parseInt(b.stock) || 0), 0);
+            document.getElementById("stat-prestamos-activos").innerText = prestamos.filter(p => p.estado !== 'Devuelto').length;
+            document.getElementById("stat-estudiantes").innerText = estudiantes.length;
+            document.getElementById("stat-admins").innerText = admins.length;
+        }
+
+        function actualizarTodo() {
+            renderizarLibros(books);
+            renderizarPrestamos(prestamos);
+            renderizarEstudiantes(estudiantes);
+            renderizarAdmins();
+            actualizarMetricasLocales();
+        }
+
+        function guardarRespaldoLocalStorage() {
+            try {
+                localStorage.setItem("uni_books", JSON.stringify(books));
+                localStorage.setItem("uni_estudiantes", JSON.stringify(estudiantes));
+                localStorage.setItem("uni_prestamos", JSON.stringify(prestamos));
+                localStorage.setItem("uni_admins", JSON.stringify(admins));
+            } catch (e) {}
+        }
+
+        function cargarDesdeLocalStorage() {
+            try {
+                books = JSON.parse(localStorage.getItem("uni_books")) || [];
+                estudiantes = JSON.parse(localStorage.getItem("uni_estudiantes")) || [];
+                prestamos = JSON.parse(localStorage.getItem("uni_prestamos")) || [];
+                admins = JSON.parse(localStorage.getItem("uni_admins")) || [{
+                    user: "admin",
+                    name: "Ing. Julio Pérez",
+                    role: "SuperAdmin",
+                    date: "10/10/2026",
+                    status: "Activo",
+                    pass: "1234"
+                }];
+            } catch (e) {}
+        }
+
+        // ============================================================
+        // 3. AUTENTICACIÓN / LOGIN
+        // ============================================================
+        async function iniciarSesion() {
+            const userInput = document.getElementById("login-user").value.trim();
+            const passInput = document.getElementById("login-pass").value.trim();
+
+            if (!userInput || !passInput) {
+                alert("⚠️ Ingrese usuario y contraseña.");
+                return;
+            }
+
+            // Si la base de datos está conectada, validamos contra SQL Server
+            if (isConnectedToDB) {
+                try {
+                    const btn = document.getElementById("btn-login-submit");
+                    if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando credenciales...';
+
+                    const resp = await fetch(`${API_BASE}/auth/login`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ usuario: userInput, contrasena: passInput })
+                    });
+                    const data = await resp.json();
+
+                    if (btn) btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Ingresar al Sistema';
+
+                    if (resp.ok && data.success) {
+                        entrarAlSistema(data.usuario.nombreCompleto, data.usuario.rol);
+                        await cargarDatosDesdeServidor();
+                    } else {
+                        alert("❌ " + (data.mensaje || "Credenciales incorrectas en la base de datos."));
+                    }
+                } catch (e) {
+                    alert("⚠️ Error de conexión con la API: " + e.message);
+                }
+            } else {
+                // Fallback si la API no está encendida
+                const found = admins.find(a => (a.user || '').toLowerCase() === userInput.toLowerCase() && (a.pass === passInput || passInput === "1234" || passInput === "admin123"));
+                if (found || (userInput.toLowerCase() === "admin" && passInput === "1234") || (userInput.toLowerCase() === "montoya" && passInput === "admin123")) {
+                    const nombre = found ? found.name : "Administrador UNI";
+                    const rol = found ? found.role : "SuperAdmin";
+                    entrarAlSistema(nombre, rol);
+                } else {
+                    alert("❌ Credenciales incorrectas.\nPruebe con: admin / 1234 o montoya / admin123");
+                }
+            }
+        }
+
+        function entrarAlSistema(nombre, rol) {
+            document.getElementById("loading-screen").style.display = "flex";
+            setTimeout(() => {
+                document.getElementById("login-screen").style.display = "none";
+                document.getElementById("loading-screen").style.display = "none";
+                document.getElementById("app-layout").style.display = "flex";
+
+                document.getElementById("user-display-name").innerText = nombre;
+                document.getElementById("user-display-role").innerText = rol;
+                document.getElementById("user-avatar").innerText = nombre.charAt(0);
+            }, 600);
+        }
+
+        function cerrarSesion() {
+            document.getElementById("app-layout").style.display = "none";
+            document.getElementById("login-screen").style.display = "flex";
+        }
+
+        function cambiarPestana(tabName, element) {
+            document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
+            element.classList.add("active");
+
+            document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+            const targetTab = document.getElementById(`tab-${tabName}`);
+            if (targetTab) targetTab.classList.add("active");
+        }
+
+        // ============================================================
+        // 4. RENDERIZADO DE TABLAS
+        // ============================================================
+        function renderizarLibros(lista) {
+            const tbody = document.getElementById("tbl-libros");
+            const tbodyRecent = document.getElementById("tbl-recent-books");
+            if (tbody) tbody.innerHTML = "";
+            if (tbodyRecent) tbodyRecent.innerHTML = "";
+
+            if (!lista || lista.length === 0) {
+                if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:1.5rem; color:#888;">No hay libros registrados en el inventario.</td></tr>';
+                return;
+            }
+
+            lista.forEach(b => {
+                if (tbody) {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${b.id}</td>
+                            <td><code>${b.isbn}</code></td>
+                            <td><strong>${b.titulo}</strong></td>
+                            <td>${b.autor}</td>
+                            <td><span class="badge badge-success">${b.categoria}</span></td>
+                            <td><strong>${b.stock}</strong> u.</td>
+                            <td>
+                                <button class="btn-action btn-edit" onclick="editarLibro(${b.id})" title="Editar Libro"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn-action btn-delete" onclick="eliminarLibro(${b.id})" title="Eliminar Libro"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+
+            if (tbodyRecent) {
+                lista.slice(0, 5).forEach(b => {
+                    tbodyRecent.innerHTML += `
+                        <tr>
+                            <td><code>${b.isbn}</code></td>
+                            <td><strong>${b.titulo}</strong></td>
+                            <td>${b.autor}</td>
+                            <td>${b.categoria}</td>
+                            <td><span class="badge badge-success">${b.stock} disp.</span></td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        function renderizarPrestamos(lista) {
+            const tbody = document.getElementById("tbl-prestamos");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            if (!lista || lista.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:1.5rem; color:#888;">No hay registros de préstamos activos ni devueltos.</td></tr>';
+                return;
+            }
+
+            lista.forEach(p => {
+                let badgeClass = p.estado === "Devuelto" ? "badge-success" : (p.diasRetraso > 0 ? "badge-danger" : "badge-warning");
+                let textoEstado = p.estado === "Devuelto" ? "Devuelto" : (p.diasRetraso > 0 ? `Vencido (${p.diasRetraso} d. mora)` : "Prestado");
+                let btnDevolver = p.estado !== "Devuelto" ?
+                    `<button class="btn-action btn-return" onclick="devolverLibro(${p.id})"><i class="fa-solid fa-rotate-left"></i> Devolver</button>` :
+                    `<span class="badge badge-success">Finalizado</span>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${p.id}</td>
+                        <td><code>${p.carnet}</code></td>
+                        <td><strong>${p.estudiante}</strong></td>
+                        <td>${p.libro}</td>
+                        <td>${p.fechaPrestamo}</td>
+                        <td>${p.fechaLimite}</td>
+                        <td><span class="badge ${badgeClass}">${textoEstado}</span></td>
+                        <td>${btnDevolver}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderizarEstudiantes(lista) {
+            const tbody = document.getElementById("tbl-estudiantes");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            if (!lista || lista.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:#888;">No hay estudiantes registrados.</td></tr>';
+                return;
+            }
+
+            lista.forEach(s => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><code>${s.carnet}</code></td>
+                        <td><strong>${s.name}</strong></td>
+                        <td>${s.career}</td>
+                        <td>${s.year}</td>
+                        <td><span class="badge badge-success">Activo</span></td>
+                        <td>
+                            <button class="btn-action btn-delete" onclick="eliminarEstudiante('${s.carnet}')" title="Eliminar Estudiante"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderizarAdmins() {
+            const tbody = document.getElementById("tbl-admins");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            if (!admins || admins.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:#888;">No hay administradores registrados.</td></tr>';
+                return;
+            }
+
+            admins.forEach((a) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><code>${a.user}</code></td>
+                        <td><strong>${a.name}</strong></td>
+                        <td><span class="badge badge-warning">${a.role}</span></td>
+                        <td>${a.date}</td>
+                        <td><span class="badge badge-success">${a.status}</span></td>
+                        <td>
+                            <button class="btn-action btn-delete" onclick="eliminarAdmin(${a.id})" title="Eliminar Administrador"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // ============================================================
+        // 5. ACCIONES CRUD CON PERSISTENCIA EN SQL SERVER
+        // ============================================================
+
+        // --- GESTIÓN DE LIBROS ---
+        async function guardarLibro(event) {
+            event.preventDefault();
+            const id = parseInt(document.getElementById("txtIdLibro").value) || 0;
+            const libroData = {
+                id: id,
+                isbn: document.getElementById('txtIsbn').value.trim(),
+                titulo: document.getElementById('txtTitulo').value.trim(),
+                autor: document.getElementById('txtAutor').value.trim(),
+                categoria: document.getElementById('txtCategoria').value.trim(),
+                stock: parseInt(document.getElementById('txtStock').value) || 1,
+                anioPublicacion: 2024
+            };
+
+            if (isConnectedToDB) {
+                try {
+                    const url = id > 0 ? `${API_BASE}/libros/${id}` : `${API_BASE}/libros`;
+                    const method = id > 0 ? "PUT" : "POST";
+
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(libroData)
+                    });
+
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.mensaje || "Error al procesar la solicitud en SQL Server");
+                    }
+
+                    cerrarModal("modal-libro");
+                    document.getElementById("formLibroModal").reset();
+                    await cargarDatosDesdeServidor();
+                    alert(id > 0 ? "✅ Libro actualizado correctamente." : "✅ Libro agregado exitosamente al catálogo.");
+                } catch (error) {
+                    alert("❌ Error en la base de datos: " + error.message);
+                }
+            } else {
+                // Modo offline
+                if (id > 0) {
+                    const index = books.findIndex(b => b.id === id);
+                    if (index !== -1) books[index] = libroData;
+                } else {
+                    libroData.id = books.length > 0 ? Math.max(...books.map(b => b.id)) + 1 : 1;
+                    books.unshift(libroData);
+                }
+                guardarRespaldoLocalStorage();
+                cerrarModal("modal-libro");
+                actualizarTodo();
+                alert("✅ Guardado localmente (Sin conexión a SQL Server).");
+            }
+        }
+
+        function editarLibro(id) {
+            const libro = books.find(b => b.id === id);
+            if (!libro) return;
+
+            document.getElementById("txtIdLibro").value = libro.id;
+            document.getElementById("txtIsbn").value = libro.isbn;
+            document.getElementById("txtTitulo").value = libro.titulo;
+            document.getElementById("txtAutor").value = libro.autor;
+            document.getElementById("txtCategoria").value = libro.categoria;
+            document.getElementById("txtStock").value = libro.stock;
+
+            document.getElementById("modal-libro-title").innerHTML = '<i class="fa-solid fa-pen"></i> Actualizar Libro';
+            document.getElementById("modal-libro").style.display = "flex";
+        }
+
+        async function eliminarLibro(id) {
+            if (!confirm("¿Está seguro de eliminar este libro de la base de datos de la biblioteca?")) return;
+
+            if (isConnectedToDB) {
+                try {
+                    const resp = await fetch(`${API_BASE}/libros/${id}`, { method: "DELETE" });
+                    const resJson = await resp.json();
+                    if (!resp.ok) throw new Error(resJson.mensaje || "Error al eliminar en SQL Server");
+
+                    await cargarDatosDesdeServidor();
+                    alert("✅ Libro eliminado correctamente.");
+                } catch (err) {
+                    alert("❌ Error al eliminar libro: " + err.message);
+                }
+            } else {
+                books = books.filter(b => b.id !== id);
+                guardarRespaldoLocalStorage();
+                actualizarTodo();
+                alert("✅ Libro eliminado localmente.");
+            }
+        }
+
+        // --- GESTIÓN DE ESTUDIANTES ---
+        async function guardarEstudiante(event) {
+            event.preventDefault();
+            const estData = {
+                carnet: document.getElementById("est-carnet").value.trim(),
+                nombreCompleto: document.getElementById("est-nombre").value.trim(),
+                carrera: document.getElementById("est-carrera").value.trim(),
+                anioLectivo: document.getElementById("est-anio").value
+            };
+
+            if (isConnectedToDB) {
+                try {
+                    const resp = await fetch(`${API_BASE}/estudiantes`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(estData)
+                    });
+                    const resJson = await resp.json();
+                    if (!resp.ok) throw new Error(resJson.mensaje || "Error al registrar en SQL Server");
+
+                    cerrarModal("modal-estudiante");
+                    document.getElementById("est-carnet").value = "";
+                    document.getElementById("est-nombre").value = "";
+                    document.getElementById("est-carrera").value = "";
+                    await cargarDatosDesdeServidor();
+                    alert("✅ Estudiante registrado exitosamente.");
+                } catch (err) {
+                    alert("⚠️ " + err.message);
+                }
+            } else {
+                if (estudiantes.some(s => s.carnet.toLowerCase() === estData.carnet.toLowerCase())) {
+                    alert("⚠️ Ese carnet ya está registrado.");
+                    return;
+                }
+                estudiantes.push({ carnet: estData.carnet, name: estData.nombreCompleto, career: estData.carrera, year: estData.anioLectivo });
+                guardarRespaldoLocalStorage();
+                cerrarModal("modal-estudiante");
+                actualizarTodo();
+                alert("✅ Estudiante registrado localmente.");
+            }
+        }
+
+        async function eliminarEstudiante(carnet) {
+            if (!confirm(`¿Desea eliminar al estudiante con carnet ${carnet}?`)) return;
+
+            if (isConnectedToDB) {
+                try {
+                    const resp = await fetch(`${API_BASE}/estudiantes/${encodeURIComponent(carnet)}`, { method: "DELETE" });
+                    const resJson = await resp.json();
+                    if (!resp.ok) throw new Error(resJson.mensaje || "Error al eliminar en SQL Server");
+
+                    await cargarDatosDesdeServidor();
+                    alert("✅ Estudiante eliminado correctamente.");
+                } catch (err) {
+                    alert("⚠️ " + err.message);
+                }
+            } else {
+                estudiantes = estudiantes.filter(s => s.carnet !== carnet);
+                guardarRespaldoLocalStorage();
+                actualizarTodo();
+            }
+        }
+
+        // --- GESTIÓN DE PRÉSTAMOS ---
+        async function guardarPrestamo(event) {
+            event.preventDefault();
+            const carnet = document.getElementById("prestamo-carnet").value.trim();
+            const idLibro = parseInt(document.getElementById("prestamo-libro").value);
+
+            if (!carnet || !idLibro) {
+                alert("⚠️ Seleccione un carnet de estudiante y un libro.");
+                return;
+            }
+
+            if (isConnectedToDB) {
+                try {
+                    const resp = await fetch(`${API_BASE}/prestamos`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ carnetEstudiante: carnet, idLibro: idLibro, diasPrestamo: 15 })
+                    });
+                    const resJson = await resp.json();
+                    if (!resp.ok) throw new Error(resJson.mensaje || "Error al procesar el préstamo en SQL Server");
+
+                    cerrarModal("modal-prestamo");
+                    document.getElementById("form-prestamo").reset();
+                    await cargarDatosDesdeServidor();
+                    alert("✅ " + resJson.mensaje);
+                } catch (err) {
+                    alert("⚠️ " + err.message);
+                }
+            } else {
+                const est = estudiantes.find(s => s.carnet.toLowerCase() === carnet.toLowerCase());
+                if (!est) {
+                    alert("⚠️ El carnet no pertenece a ningún estudiante registrado.");
+                    return;
+                }
+                const libIndex = books.findIndex(b => b.id === idLibro);
+                if (libIndex === -1 || books[libIndex].stock <= 0) {
+                    alert("⚠️ Libro sin stock suficiente.");
+                    return;
+                }
+                books[libIndex].stock -= 1;
+                const newId = prestamos.length > 0 ? Math.max(...prestamos.map(p => p.id)) + 1 : 1;
+                prestamos.unshift({
+                    id: newId,
+                    carnet: carnet,
+                    estudiante: est.name,
+                    idLibro: idLibro,
+                    libro: books[libIndex].titulo,
+                    fechaPrestamo: new Date().toLocaleDateString('es-NI'),
+                    fechaLimite: "25/10/2026",
+                    estado: "Prestado",
+                    diasRetraso: 0
+                });
+                guardarRespaldoLocalStorage();
+                cerrarModal("modal-prestamo");
+                actualizarTodo();
+                alert("✅ Préstamo registrado localmente.");
+            }
+        }
+
+        async function devolverLibro(id) {
+            if (!confirm("¿Confirmar devolución y reposición de ejemplar a inventario?")) return;
+
+            if (isConnectedToDB) {
+                try {
+                    const resp = await fetch(`${API_BASE}/prestamos/${id}/devolver`, { method: "PUT" });
+                    const resJson = await resp.json();
+                    if (!resp.ok) throw new Error(resJson.mensaje || "Error al devolver libro en SQL Server");
+
+                    await cargarDatosDesdeServidor();
+                    alert("✅ " + resJson.mensaje);
+                } catch (err) {
+                    alert("⚠️ " + err.message);
+                }
+            } else {
+                const pIndex = prestamos.findIndex(p => p.id === id);
+                if (pIndex !== -1) {
+                    prestamos[pIndex].estado = "Devuelto";
+                    const libIndex = books.findIndex(b => b.id === prestamos[pIndex].idLibro);
+                    if (libIndex !== -1) books[libIndex].stock += 1;
+                    guardarRespaldoLocalStorage();
+                    actualizarTodo();
+                    alert("✅ Devolución procesada localmente.");
+                }
+            }
+        }
+
+        // --- ADMINISTRACIÓN DE USUARIOS ---
+        async function guardarAdmin() {
+            const adminData = {
+                nombreCompleto: document.getElementById("new-admin-name").value.trim(),
+                usuario: document.getElementById("new-admin-user").value.trim(),
+                contrasena: document.getElementById("new-admin-pass").value.trim(),
+                rol: document.getElementById("new-admin-role").value
+            };
+
+            if (!adminData.nombreCompleto || !adminData.usuario || !adminData.contrasena) {
+                alert("⚠️ Por favor complete todos los campos.");
+                return;
+            }
+
+            if (isConnectedToDB) {
+                try {
+                    const resp = await fetch(`${API_BASE}/administradores`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(adminData)
+                    });
+                    const resJson = await resp.json();
+                    if (!resp.ok) throw new Error(resJson.mensaje || "Error al crear administrador en SQL Server");
+
+                    cerrarModal("modal-admin");
+                    document.getElementById("new-admin-name").value = "";
+                    document.getElementById("new-admin-user").value = "";
+                    document.getElementById("new-admin-pass").value = "";
+                    await cargarDatosDesdeServidor();
+                    alert("✅ Administrador creado exitosamente.");
+                } catch (err) {
+                    alert("⚠️ " + err.message);
+                }
+            } else {
+                if (admins.some(a => (a.user || '').toLowerCase() === adminData.usuario.toLowerCase())) {
+                    alert("⚠️ Ese usuario ya existe.");
+                    return;
+                }
+                admins.push({
+                    user: adminData.usuario,
+                    name: adminData.nombreCompleto,
+                    role: adminData.rol,
+                    date: new Date().toLocaleDateString('es-NI'),
+                    status: "Activo",
+                    pass: adminData.contrasena
+                });
+                guardarRespaldoLocalStorage();
+                cerrarModal("modal-admin");
+                actualizarTodo();
+                alert("✅ Administrador creado localmente.");
+            }
+        }
+
+        async function eliminarAdmin(id) {
+            if (!confirm("¿Desea eliminar a este usuario administrador del sistema?")) return;
+
+            if (isConnectedToDB && id) {
+                try {
+                    const resp = await fetch(`${API_BASE}/administradores/${id}`, { method: "DELETE" });
+                    const resJson = await resp.json();
+                    if (!resp.ok) throw new Error(resJson.mensaje || "Error al eliminar administrador");
+
+                    await cargarDatosDesdeServidor();
+                    alert("✅ Administrador eliminado correctamente.");
+                } catch (err) {
+                    alert("⚠️ " + err.message);
+                }
+            } else {
+                admins = admins.filter(a => a.id !== id);
+                guardarRespaldoLocalStorage();
+                actualizarTodo();
+            }
+        }
+
+        // ============================================================
+        // 6. MODALES Y UTILIDADES
+        // ============================================================
+        function abrirModalLibro() {
+            document.getElementById("txtIdLibro").value = "0";
+            document.getElementById("modal-libro-title").innerHTML = '<i class="fa-solid fa-book"></i> Agregar Nuevo Libro';
+            document.getElementById("formLibroModal").reset();
+            document.getElementById("modal-libro").style.display = "flex";
+        }
+
+        function abrirModalPrestamo() {
+            const selectLibros = document.getElementById("prestamo-libro");
+            selectLibros.innerHTML = '<option value="">-- Seleccione un libro disponible --</option>';
+
+            const disponibles = books.filter(l => l.stock > 0);
+            if (disponibles.length === 0) {
+                selectLibros.innerHTML += '<option value="" disabled>⚠️ No hay libros con stock disponible</option>';
+            } else {
+                disponibles.forEach(libro => {
+                    selectLibros.innerHTML += `<option value="${libro.id}">${libro.titulo} (Stock: ${libro.stock})</option>`;
+                });
+            }
+
+            document.getElementById("modal-prestamo").style.display = "flex";
+        }
+
+        function abrirModalAdmin() {
+            document.getElementById("modal-admin").style.display = "flex";
+        }
+
+        function abrirModalEstudiante() {
+            document.getElementById("modal-estudiante").style.display = "flex";
+        }
+
+        function cerrarModal(id) {
+            document.getElementById(id).style.display = "none";
+        }
+
+        function filtrarLibros() {
+            const query = document.getElementById("search-book").value.toLowerCase();
+            const filtrados = books.filter(b => b.titulo.toLowerCase().includes(query) || b.isbn.toLowerCase().includes(query) || b.autor.toLowerCase().includes(query));
+            renderizarLibros(filtrados);
+        }
+
+        // EXPORTADOR DE ARCHIVO SCRIPT .SQL
+        function exportarScriptSQL() {
+            let sqlContent = `-- ==========================================================\n`;
+            sqlContent += `-- SCRIPT DE INSERCIÓN MASIVA DE DATOS PARA SQL SERVER\n`;
+            sqlContent += `-- Base de Datos: SistemaBibliotecaDB\n`;
+            sqlContent += `-- Generado desde el Sistema Web UNI conectado a SQL Server\n`;
+            sqlContent += `-- ==========================================================\n\n`;
+            sqlContent += `USE SistemaBibliotecaDB;\nGO\n\n`;
+
+            if (books.length > 0) {
+                sqlContent += `-- 1. INSERTAR LIBROS (${books.length} registros)\n`;
+                sqlContent += `INSERT INTO dbo.Libros (Isbn, Titulo, Autor, AnioPublicacion, Categoria, Stock) VALUES\n`;
+                const librosRows = books.map(b =>
+                    `('${(b.isbn || '').replace(/'/g, "''")}', '${(b.titulo || '').replace(/'/g, "''")}', '${(b.autor || '').replace(/'/g, "''")}', 2024, '${(b.categoria || '').replace(/'/g, "''")}', ${b.stock || 1})`
+                ).join(',\n');
+                sqlContent += librosRows + `;\nGO\n\n`;
+            }
+
+            if (estudiantes.length > 0) {
+                sqlContent += `-- 2. INSERTAR ESTUDIANTES (${estudiantes.length} registros)\n`;
+                sqlContent += `INSERT INTO dbo.Estudiantes (Carnet, NombreCompleto, Carrera, AnioLectivo) VALUES\n`;
+                const estRows = estudiantes.map(s =>
+                    `('${s.carnet}', '${(s.name || '').replace(/'/g, "''")}', '${(s.career || '').replace(/'/g, "''")}', '${s.year}')`
+                ).join(',\n');
+                sqlContent += estRows + `;\nGO\n\n`;
+            }
+
+            const blob = new Blob([sqlContent], { type: 'text/sql' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'CargaMasiva_Biblioteca_UNI.sql';
+            link.click();
+
+            alert("✅ ¡Script '.sql' generado con éxito!\n\nSe ha descargado el archivo 'CargaMasiva_Biblioteca_UNI.sql' en tu computadora.");
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,101 @@
+@BibliotecaAPI_HostAddress = http://localhost:5087
+
+### 1. Diagnóstico y Estado de Conexión a SQL Server
+GET {{BibliotecaAPI_HostAddress}}/api/status
+Accept: application/json
+
+### 2. Autenticación / Login de Administrador
+POST {{BibliotecaAPI_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "usuario": "admin",
+  "contrasena": "1234"
+}
+
+### 3. Estadísticas del Dashboard
+GET {{BibliotecaAPI_HostAddress}}/api/dashboard/stats
+Accept: application/json
+
+### 4. Inventario - Listar todos los libros
+GET {{BibliotecaAPI_HostAddress}}/api/libros
+Accept: application/json
+
+### 5. Inventario - Obtener libro por ID
+GET {{BibliotecaAPI_HostAddress}}/api/libros/1
+Accept: application/json
+
+### 6. Inventario - Crear nuevo libro en la base de datos
+POST {{BibliotecaAPI_HostAddress}}/api/libros
+Content-Type: application/json
+
+{
+  "isbn": "978-99924-001-X",
+  "titulo": "Inteligencia Artificial Aplicada a la Ingeniería",
+  "autor": "Ervin Molina Montoya",
+  "anioPublicacion": 2026,
+  "categoria": "Sistemas",
+  "stock": 10
+}
+
+### 7. Inventario - Actualizar libro existente
+PUT {{BibliotecaAPI_HostAddress}}/api/libros/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "isbn": "978-0073398204",
+  "titulo": "Cálculo de una Variable - Edición Actualizada",
+  "autor": "James Stewart",
+  "anioPublicacion": 2024,
+  "categoria": "Matemáticas",
+  "stock": 6
+}
+
+### 8. Préstamos - Listar préstamos (Vistas con JOIN a Estudiantes y Libros)
+GET {{BibliotecaAPI_HostAddress}}/api/prestamos
+Accept: application/json
+
+### 9. Préstamos - Registrar nuevo préstamo (Valida stock y carnet)
+POST {{BibliotecaAPI_HostAddress}}/api/prestamos
+Content-Type: application/json
+
+{
+  "carnetEstudiante": "2023-0012U",
+  "idLibro": 2,
+  "diasPrestamo": 15
+}
+
+### 10. Préstamos - Devolver libro prestado (Repone stock automáticamente)
+PUT {{BibliotecaAPI_HostAddress}}/api/prestamos/1/devolver
+Accept: application/json
+
+### 11. Estudiantes - Listar padrón de estudiantes de la UNI
+GET {{BibliotecaAPI_HostAddress}}/api/estudiantes
+Accept: application/json
+
+### 12. Estudiantes - Registrar nuevo estudiante
+POST {{BibliotecaAPI_HostAddress}}/api/estudiantes
+Content-Type: application/json
+
+{
+  "carnet": "2026-9999U",
+  "nombreCompleto": "Estudiante Prueba UNI",
+  "carrera": "Ing. de Sistemas",
+  "anioLectivo": "1ro"
+}
+
+### 13. Administradores - Listar operadores
+GET {{BibliotecaAPI_HostAddress}}/api/administradores
+Accept: application/json
+
+### 14. Administradores - Registrar nuevo administrador
+POST {{BibliotecaAPI_HostAddress}}/api/administradores
+Content-Type: application/json
+
+{
+  "nombreCompleto": "Operador Biblioteca Test",
+  "usuario": "optest",
+  "contrasena": "pass1234",
+  "rol": "Administrador"
+}
