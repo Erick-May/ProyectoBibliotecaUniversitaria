@@ -1161,7 +1161,7 @@
                     const rol = found ? found.role : "SuperAdmin";
                     entrarAlSistema(nombre, rol);
                 } else {
-                    alert("❌ Credenciales incorrectas.\nPruebe con: admin / 1234");
+                    alert("❌ Credenciales incorrectas");
                 }
             }
         }
@@ -1640,6 +1640,48 @@
 
         function cerrarModal(id) {
             document.getElementById(id).style.display = "none";
+        }
+
+        // Coloca esta función dentro de tus etiquetas <script> en el index.html
+        function registrarLibroDesdeUI() {
+            // 1. Capturas los valores de tus inputs del formulario de libros
+            const titulo = document.getElementById('input-titulo').value.trim();
+            const autor = document.getElementById('input-autor').value.trim();
+            const isbn = document.getElementById('input-isbn').value.trim();
+            const stock = document.getElementById('input-stock').value;
+
+            // Validación rápida para campos vacíos
+            if (!titulo || !autor || !isbn || !stock) {
+                alert("Por favor, completa todos los campos del libro.");
+                return;
+            }
+
+            // 2. Obtienes la lista actual del localStorage
+            let listaLibros = JSON.parse(localStorage.getItem('libros')) || [];
+
+            // 3. RESTRICCIÓN: Verificamos si ya existe un libro con el mismo ISBN
+            let existeLibro = listaLibros.some(libro => libro.isbn === isbn);
+
+            if (existeLibro) {
+                // Alerta visual en el diseño cuando hay duplicado
+                alert("¡Aviso! Ya existe un libro registrado con este código ISBN en el sistema.");
+                return; // Detiene el proceso y no deja duplicar
+            }
+
+            // 4. Si pasa la validación, se crea el objeto y se guarda
+            const nuevoLibro = {
+                titulo,
+                autor,
+                isbn,
+                stock: parseInt(stock)
+            };
+            listaLibros.push(nuevoLibro);
+
+            localStorage.setItem('libros', JSON.stringify(listaLibros));
+
+            // Refrescas tu tabla o interfaz visual aquí
+            alert("¡Libro registrado con éxito!");
+            // cargarTablaLibros(); 
         }
 
         function filtrarLibros() {
