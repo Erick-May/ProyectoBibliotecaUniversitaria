@@ -562,20 +562,13 @@
     <!-- ==================== PANTALLA DE LOGIN ==================== -->
     <div id="login-screen">
         <div class="login-card">
-            <div class="login-logo-container" style="width: 140px; height: auto; margin: 0 auto 1rem auto; display: flex; justify-content: center;">
-                <svg class="login-logo-img" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; display: block;">
-        <!-- Bloque sólido azul marino -->
-        <rect x="0" y="0" width="320" height="200" fill="#002B49" />
-        
-        <!-- Ranuras de corte con el color blanco de la tarjeta -->
-        <path fill="#FFFFFF" d="
-            M 45,0 V 135 H 125 V 65 H 175 V 200 H 155 V 85 H 105 V 150 H 25 V 0 Z
-            M 225,0 V 135 H 245 V 65 H 320 V 45 H 225 Z
-        " />
-    </svg>
+            <div class="login-logo-mini" style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 25px;">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="72" height="72" fill="none" stroke="#1e3a8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.1));">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                </svg>
+                <span style="font-size: 24px; font-weight: 700; color: #1e3a8a;">Biblioteca UNI</span>
             </div>
-            <h2>Biblioteca UNI</h2>
-            <h5>UNIVERSIDAD NACIONAL DE INGENIERÍA</h5>
 
             <!-- Campos del Login -->
             <div class="form-group">
@@ -601,22 +594,18 @@
         <p id="loading-subtext" style="font-size: 0.85rem; color: var(--uni-gold); margin-top: 0.5rem;">Cargando información del catálogo institucional...</p>
     </div>
 
+
     <!-- ==================== APLICACIÓN PRINCIPAL ==================== -->
     <div id="app-layout">
         <!-- HEADER -->
         <header>
             <div class="brand-container">
                 <div class="header-logo-box" style="width: 55px; height: auto; flex-shrink: 0;">
-                    <svg class="header-logo-img" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; display: block;">
-        <!-- Bloque sólido blanco -->
-        <rect x="0" y="0" width="320" height="200" fill="#FFFFFF" />
-        
-        <!-- Ranuras de corte con el color de fondo exacto del header (#002B49) -->
-        <path fill="#002B49" d="
-            M 45,0 V 135 H 125 V 65 H 175 V 200 H 155 V 85 H 105 V 150 H 25 V 0 Z
-            M 225,0 V 135 H 245 V 65 H 320 V 45 H 225 Z
-        " />
-    </svg>
+                    <svg class="header-logo-img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; display: block;" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <!-- Icono de libro abierto vectorial adaptado al header -->
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    </svg>
                 </div>
                 <div class="brand-text">
                     <h1>Biblioteca UNI</h1>
