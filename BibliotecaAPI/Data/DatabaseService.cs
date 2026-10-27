@@ -150,6 +150,17 @@ public class DatabaseService
         await using var conn = CreateConnection();
         await conn.OpenAsync();
 
+        // 1-Validación de Unicidad estricta para Libros (ISBN + Título)
+        await using var cmdCheck = conn.CreateCommand();
+        cmdCheck.CommandText = "SELECT COUNT(*) FROM dbo.Libros WHERE LOWER(Isbn) = LOWER(@Isbn) AND LOWER(Titulo) = LOWER(@Titulo);";
+        cmdCheck.Parameters.AddWithValue("@Isbn", libro.Isbn.Trim());
+        cmdCheck.Parameters.AddWithValue("@Titulo", libro.Titulo.Trim());
+        var count = (int)(await cmdCheck.ExecuteScalarAsync() ?? 0);
+        if (count > 0)
+        {
+            throw new InvalidOperationException("Ya existe un registro correspondiente con este ISBN y título en el sistema.");
+        }
+
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
             INSERT INTO dbo.Libros (Isbn, Titulo, Autor, AnioPublicacion, Categoria, Stock)
@@ -234,10 +245,35 @@ public class DatabaseService
         return lista;
     }
 
-    public async Task<bool> CrearEstudianteAsync(Estudiante est)
+    public async Task<(bool ok, string mensaje)> CrearEstudianteAsync(Estudiante est)
     {
         await using var conn = CreateConnection();
         await conn.OpenAsync();
+
+        // 2-Validación de Unicidad para Estudiantes (Carné y NombreCompleto)
+        await using var cmdCheck = conn.CreateCommand();
+        cmdCheck.CommandText = @"
+            SELECT 
+                ISNULL(SUM(CASE WHEN LOWER(Carnet) = LOWER(@Carnet) THEN 1 ELSE 0 END), 0) AS CarnetExiste,
+                ISNULL(SUM(CASE WHEN LOWER(NombreCompleto) = LOWER(@NombreCompleto) THEN 1 ELSE 0 END), 0) AS NombreExiste
+            FROM dbo.Estudiantes;
+        ";
+        cmdCheck.Parameters.AddWithValue("@Carnet", est.Carnet.Trim());
+        cmdCheck.Parameters.AddWithValue("@NombreCompleto", est.NombreCompleto.Trim());
+
+        await using (var reader = await cmdCheck.ExecuteReaderAsync())
+        {
+            if (await reader.ReadAsync())
+            {
+                int carnetExiste = reader.GetInt32(0);
+                int nombreExiste = reader.GetInt32(1);
+
+                if (carnetExiste > 0)
+                    return (false, $"Ya existe un estudiante registrado con el carné '{est.Carnet}'.");
+                if (nombreExiste > 0)
+                    return (false, $"Ya existe un estudiante registrado con el nombre completo '{est.NombreCompleto}'.");
+            }
+        }
 
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
@@ -250,7 +286,7 @@ public class DatabaseService
         cmd.Parameters.AddWithValue("@AnioLectivo", est.AnioLectivo.Trim());
 
         var rows = await cmd.ExecuteNonQueryAsync();
-        return rows > 0;
+        return (rows > 0, rows > 0 ? "Estudiante registrado exitosamente." : "No se pudo registrar el estudiante.");
     }
 
     public async Task<bool> EliminarEstudianteAsync(string carnet)
@@ -339,6 +375,24 @@ public class DatabaseService
             {
                 await tran.RollbackAsync();
                 return (false, $"El estudiante con carnet '{dto.CarnetEstudiante}' no está registrado.", null);
+            }
+
+            // 3-Control de Préstamos Activos (Evitar doble préstamo del mismo libro)
+            await using var cmdActivo = conn.CreateCommand();
+            cmdActivo.Transaction = tran;
+            cmdActivo.CommandText = @"
+                SELECT COUNT(*) FROM dbo.Prestamos 
+                WHERE LOWER(CarnetEstudiante) = LOWER(@Carnet) 
+                  AND IdLibro = @IdLibro 
+                  AND Estado <> 'Devuelto';
+            ";
+            cmdActivo.Parameters.AddWithValue("@Carnet", dto.CarnetEstudiante.Trim());
+            cmdActivo.Parameters.AddWithValue("@IdLibro", dto.IdLibro);
+            var activoCount = (int)(await cmdActivo.ExecuteScalarAsync() ?? 0);
+            if (activoCount > 0)
+            {
+                await tran.RollbackAsync();
+                return (false, "El estudiante ya posee una copia de este libro en préstamo pendiente de devolución.", null);
             }
 
             // 2. Validar que el libro exista y tenga stock
@@ -496,7 +550,7 @@ public class DatabaseService
         await using var conn = CreateConnection();
         await conn.OpenAsync();
 
-        // Validar usuario duplicado
+        // 5-Validar usuario duplicado
         await using var cmdCheck = conn.CreateCommand();
         cmdCheck.CommandText = "SELECT COUNT(*) FROM dbo.Administradores WHERE LOWER(Usuario) = LOWER(@Usuario);";
         cmdCheck.Parameters.AddWithValue("@Usuario", admin.Usuario.Trim());
@@ -504,6 +558,29 @@ public class DatabaseService
         if (count > 0)
         {
             return (false, $"El usuario '{admin.Usuario}' ya existe en el sistema.");
+        }
+
+        // 7-Validación de Límite de Cuentas por Rol
+        var rol = string.IsNullOrWhiteSpace(admin.Rol) ? "Administrador" : admin.Rol.Trim();
+        if (rol == "SuperAdmin")
+        {
+            await using var cmdSuper = conn.CreateCommand();
+            cmdSuper.CommandText = "SELECT COUNT(*) FROM dbo.Administradores WHERE Rol = 'SuperAdmin';";
+            var totalSuper = (int)(await cmdSuper.ExecuteScalarAsync() ?? 0);
+            if (totalSuper >= 7)
+            {
+                return (false, "Aviso de restricción: Se ha alcanzado el límite estricto de un máximo de 7 cuentas permitidas para SuperAdmin.");
+            }
+        }
+        else
+        {
+            await using var cmdAdmin = conn.CreateCommand();
+            cmdAdmin.CommandText = "SELECT COUNT(*) FROM dbo.Administradores WHERE Rol <> 'SuperAdmin';";
+            var totalAdmin = (int)(await cmdAdmin.ExecuteScalarAsync() ?? 0);
+            if (totalAdmin >= 10)
+            {
+                return (false, "Aviso de restricción: Se ha alcanzado el límite máximo de 10 cuentas operativas permitidas para Administrador de Biblioteca.");
+            }
         }
 
         await using var cmd = conn.CreateCommand();
@@ -514,7 +591,7 @@ public class DatabaseService
         cmd.Parameters.AddWithValue("@Usuario", admin.Usuario.Trim());
         cmd.Parameters.AddWithValue("@NombreCompleto", admin.NombreCompleto.Trim());
         cmd.Parameters.AddWithValue("@Contrasena", admin.Contrasena?.Trim() ?? "1234");
-        cmd.Parameters.AddWithValue("@Rol", string.IsNullOrWhiteSpace(admin.Rol) ? "Administrador" : admin.Rol.Trim());
+        cmd.Parameters.AddWithValue("@Rol", rol);
 
         await cmd.ExecuteNonQueryAsync();
         return (true, "Administrador registrado exitosamente.");

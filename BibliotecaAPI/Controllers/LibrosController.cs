@@ -58,6 +58,10 @@ public class LibrosController : ControllerBase
             libro.Id = nuevoId;
             return CreatedAtAction(nameof(GetLibro), new { id = nuevoId }, libro);
         }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
         catch (Exception ex)
         {
             return StatusCode(500, new { mensaje = $"Error al crear libro: {ex.Message}" });

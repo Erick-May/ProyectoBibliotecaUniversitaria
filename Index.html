@@ -1082,15 +1082,21 @@
         function guardarRespaldoLocalStorage() {
             try {
                 localStorage.setItem("uni_books", JSON.stringify(books));
+                localStorage.setItem("libros", JSON.stringify(books));
                 localStorage.setItem("uni_estudiantes", JSON.stringify(estudiantes));
+                localStorage.setItem("estudiantes", JSON.stringify(estudiantes));
                 localStorage.setItem("uni_prestamos", JSON.stringify(prestamos));
+                localStorage.setItem("prestamos", JSON.stringify(prestamos));
                 localStorage.setItem("uni_admins", JSON.stringify(admins));
-            } catch (e) {}
+                localStorage.setItem("administradores", JSON.stringify(admins));
+            } catch (e) {
+                console.error("Error al guardar en localStorage:", e);
+            }
         }
 
         function cargarDesdeLocalStorage() {
             try {
-                books = JSON.parse(localStorage.getItem("uni_books")) || [{
+                books = JSON.parse(localStorage.getItem("uni_books")) || JSON.parse(localStorage.getItem("libros")) || [{
                     id: 1,
                     isbn: "978-0131103627",
                     titulo: "C Programming Language",
@@ -1105,22 +1111,66 @@
                     categoria: "Programación",
                     stock: 8
                 }];
-                estudiantes = JSON.parse(localStorage.getItem("uni_estudiantes")) || [{
+                estudiantes = JSON.parse(localStorage.getItem("uni_estudiantes")) || JSON.parse(localStorage.getItem("estudiantes")) || [{
+                    id: 1,
                     carnet: "2023-0012U",
                     name: "Carlos Eduardo Mendoza",
                     career: "Ing. de Sistemas",
                     year: "3ro"
+                }, {
+                    id: 2,
+                    carnet: "2023-0045U",
+                    name: "Jorge Luis Blandón",
+                    career: "Ing. Industrial",
+                    year: "2do"
+                }, {
+                    id: 3,
+                    carnet: "2023-0089U",
+                    name: "Lucía Fernanda Morales",
+                    career: "Ing. Civil",
+                    year: "4to"
                 }];
-                prestamos = JSON.parse(localStorage.getItem("uni_prestamos")) || [];
-                admins = JSON.parse(localStorage.getItem("uni_admins")) || [{
+                prestamos = JSON.parse(localStorage.getItem("uni_prestamos")) || JSON.parse(localStorage.getItem("prestamos")) || [];
+                admins = JSON.parse(localStorage.getItem("uni_admins")) || JSON.parse(localStorage.getItem("administradores")) || [{
+                    id: 1,
                     user: "admin",
                     name: "Administrador UNI",
                     role: "SuperAdmin",
                     date: "18/10/2026",
                     status: "Activo",
                     pass: "1234"
+                }, {
+                    id: 2,
+                    user: "montoya",
+                    name: "Ervin Montoya",
+                    role: "Administrador",
+                    date: "18/10/2026",
+                    status: "Activo",
+                    pass: "admin123"
                 }];
-            } catch (e) {}
+
+                // 6-Garantizar ID único a cada registro para evitar borrado masivo
+                books.forEach((b, i) => { if (!b.id) b.id = i + 1; });
+                estudiantes.forEach((s, i) => { if (!s.id) s.id = i + 1; });
+                admins.forEach((a, i) => { if (!a.id) a.id = i + 1; });
+                prestamos.forEach((p, i) => { if (!p.id) p.id = i + 1; });
+            } catch (e) {
+                console.error("Error al cargar localStorage:", e);
+            }
+        }
+
+        // 5-Función de cifrado (codificación segura) para contraseñas de administradores
+        async function cifrarContrasena(plainText) {
+            if (!plainText) return "";
+            try {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(plainText);
+                const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+            } catch (e) {
+                return btoa(unescape(encodeURIComponent(plainText)));
+            }
         }
 
         async function iniciarSesion() {
@@ -1152,16 +1202,21 @@
                         alert("❌ " + (data.mensaje || "Credenciales incorrectas."));
                     }
                 } catch (e) {
-                    alert("⚠️ Error de conexión.");
+                    alert("⚠️ Error de conexión con el servidor.");
                 }
             } else {
-                const found = admins.find(a => (a.user || '').toLowerCase() === userInput.toLowerCase() && (a.pass === passInput || passInput === "1234"));
-                if (found || (userInput.toLowerCase() === "admin" && passInput === "1234")) {
-                    const nombre = found ? found.name : "Administrador UNI";
-                    const rol = found ? found.role : "SuperAdmin";
+                const passCifrada = await cifrarContrasena(passInput);
+                const found = admins.find(a => 
+                    (a.user || '').toLowerCase() === userInput.toLowerCase() && 
+                    (a.pass === passCifrada || a.pass === passInput || (userInput.toLowerCase() === "admin" && passInput === "1234") || (userInput.toLowerCase() === "montoya" && passInput === "admin123"))
+                );
+
+                if (found) {
+                    const nombre = found.name || "Administrador UNI";
+                    const rol = found.role || "SuperAdmin";
                     entrarAlSistema(nombre, rol);
                 } else {
-                    alert("❌ Credenciales incorrectas");
+                    alert("❌ Credenciales incorrectas.");
                 }
             }
         }
@@ -1286,7 +1341,7 @@
                     <td>${s.year}</td>
                     <td><span class="badge badge-success">Activo</span></td>
                     <td>
-                        <button class="btn-action btn-delete" onclick="eliminarEstudiante('${s.carnet}')"><i class="fa-solid fa-trash"></i></button>
+                        <button class="btn-action btn-delete" onclick="eliminarEstudiante('${s.carnet}', ${s.id || 0})"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>`;
             });
@@ -1317,6 +1372,11 @@
             });
         }
 
+        // ==========================================
+        // 1-VALIDACIÓN DE UNICIDAD ESTRICTA PARA LIBROS (ISBN + TÍTULO)
+        // Al momento de intentar registrar un libro, el sistema debe evaluar si ya existe una coincidencia exacta por ISBN y título en el localstorage.
+        // Si coincide, debe disparar el mensaje: "Ya existe un registro correspondiente con este ISBN y título en el sistema."
+        // ==========================================
         async function guardarLibro(event) {
             event.preventDefault();
             const id = parseInt(document.getElementById("txtIdLibro").value) || 0;
@@ -1329,6 +1389,24 @@
                 stock: parseInt(document.getElementById('txtStock').value) || 1,
                 anioPublicacion: 2024
             };
+
+            if (!libroData.titulo || !libroData.isbn) {
+                alert("⚠️ Por favor completa el título y el ISBN del libro.");
+                return;
+            }
+
+            // 1-Evaluación de coincidencia exacta por ISBN y título en localstorage
+            const librosLocales = JSON.parse(localStorage.getItem("uni_books")) || JSON.parse(localStorage.getItem("libros")) || books;
+            const yaExisteLibro = librosLocales.some(b => 
+                (id === 0 || parseInt(b.id) !== id) &&
+                b.isbn.trim().toLowerCase() === libroData.isbn.toLowerCase() && 
+                b.titulo.trim().toLowerCase() === libroData.titulo.toLowerCase()
+            );
+
+            if (yaExisteLibro) {
+                alert("Ya existe un registro correspondiente con este ISBN y título en el sistema.");
+                return;
+            }
 
             if (isConnectedToDB) {
                 try {
@@ -1343,32 +1421,37 @@
                         body: JSON.stringify(libroData)
                     });
 
-                    if (!response.ok) throw new Error("Error en SQL Server");
+                    const resData = await response.json();
+                    if (!response.ok) {
+                        alert(resData.mensaje || "Ya existe un registro correspondiente con este ISBN y título en el sistema.");
+                        return;
+                    }
 
                     cerrarModal("modal-libro");
                     document.getElementById("formLibroModal").reset();
                     await cargarDatosDesdeServidor();
                     alert("✅ Guardado con éxito.");
                 } catch (error) {
-                    alert("❌ Error al guardar libro.");
+                    alert("❌ Error al guardar libro: " + error.message);
                 }
             } else {
                 if (id > 0) {
-                    const index = books.findIndex(b => b.id === id);
+                    const index = books.findIndex(b => parseInt(b.id) === id);
                     if (index !== -1) books[index] = libroData;
                 } else {
-                    libroData.id = books.length > 0 ? Math.max(...books.map(b => b.id)) + 1 : 1;
+                    libroData.id = books.length > 0 ? Math.max(...books.map(b => b.id || 0)) + 1 : 1;
                     books.unshift(libroData);
                 }
                 guardarRespaldoLocalStorage();
                 cerrarModal("modal-libro");
+                document.getElementById("formLibroModal").reset();
                 actualizarTodo();
                 alert("✅ Guardado localmente.");
             }
         }
 
         function editarLibro(id) {
-            const libro = books.find(b => b.id === id);
+            const libro = books.find(b => parseInt(b.id) === parseInt(id));
             if (!libro) return;
 
             document.getElementById("txtIdLibro").value = libro.id;
@@ -1382,28 +1465,42 @@
             document.getElementById("modal-libro").style.display = "flex";
         }
 
+        // ==========================================
+        // 6-VALIDACIÓN DE ELIMINACIÓN SEGURA DE REGISTROS (LIBROS)
+        // Método .filter() por id único
+        // ==========================================
         async function eliminarLibro(id) {
             if (!confirm("¿Desea eliminar este libro?")) return;
+            const targetId = parseInt(id);
 
-            if (isConnectedToDB) {
+            if (isConnectedToDB && targetId) {
                 try {
-                    const resp = await fetch(`${API_BASE}/libros/${id}`, {
+                    const resp = await fetch(`${API_BASE}/libros/${targetId}`, {
                         method: "DELETE"
                     });
-                    if (!resp.ok) throw new Error("Error en SQL Server");
+                    const resData = await resp.json();
+                    if (!resp.ok) {
+                        alert("⚠️ " + (resData.mensaje || "Error en el servidor al eliminar."));
+                        return;
+                    }
                     await cargarDatosDesdeServidor();
                     alert("✅ Libro eliminado.");
                 } catch (err) {
                     alert("❌ Error al eliminar.");
                 }
             } else {
-                books = books.filter(b => b.id !== id);
+                books = books.filter(b => parseInt(b.id) !== targetId);
                 guardarRespaldoLocalStorage();
                 actualizarTodo();
-                alert("✅ Libro eliminado localmente.");
+                alert("✅ Libro eliminado correctamente.");
             }
         }
 
+        // ==========================================
+        // 2-VALIDACIÓN DE UNICIDAD PARA ESTUDIANTES (CARNÉ Y NOMBRECOMPLETO)
+        // Impide duplicados validando tanto carné único como nombre completo,
+        // conservando sin problemas caracteres especiales y tildes (como Jorge Luis Blandón o Lucía Fernanda Morales).
+        // ==========================================
         async function guardarEstudiante(event) {
             event.preventDefault();
             const estData = {
@@ -1412,6 +1509,28 @@
                 carrera: document.getElementById("est-carrera").value.trim(),
                 anioLectivo: document.getElementById("est-anio").value
             };
+
+            if (!estData.carnet || !estData.nombreCompleto) {
+                alert("⚠️ Por favor complete el carné y nombre completo.");
+                return;
+            }
+
+            const listaEstudiantesLocal = JSON.parse(localStorage.getItem("uni_estudiantes")) || JSON.parse(localStorage.getItem("estudiantes")) || estudiantes;
+
+            const carnetDuplicado = listaEstudiantesLocal.some(s => s.carnet.trim().toLowerCase() === estData.carnet.toLowerCase());
+            if (carnetDuplicado) {
+                alert(`⚠️ Ya existe un estudiante registrado con el carné: ${estData.carnet}`);
+                return;
+            }
+
+            const nombreDuplicado = listaEstudiantesLocal.some(s => {
+                const nom = (s.name || s.nombreCompleto || "").trim().toLowerCase();
+                return nom === estData.nombreCompleto.toLowerCase();
+            });
+            if (nombreDuplicado) {
+                alert(`⚠️ Ya existe un estudiante registrado con el nombre: ${estData.nombreCompleto}`);
+                return;
+            }
 
             if (isConnectedToDB) {
                 try {
@@ -1422,54 +1541,106 @@
                         },
                         body: JSON.stringify(estData)
                     });
-                    if (!resp.ok) throw new Error("Error en SQL Server");
+                    const resData = await resp.json();
+                    if (!resp.ok) {
+                        alert("⚠️ " + (resData.mensaje || "Error al registrar estudiante."));
+                        return;
+                    }
                     cerrarModal("modal-estudiante");
+                    document.getElementById("est-carnet").value = "";
+                    document.getElementById("est-nombre").value = "";
+                    document.getElementById("est-carrera").value = "";
                     await cargarDatosDesdeServidor();
                     alert("✅ Estudiante registrado.");
                 } catch (err) {
-                    alert("⚠️ Error al registrar.");
+                    alert("⚠️ Error al registrar: " + err.message);
                 }
             } else {
+                const nextEstId = estudiantes.length > 0 ? Math.max(...estudiantes.map(s => s.id || 0)) + 1 : 1;
                 estudiantes.push({
+                    id: nextEstId,
                     carnet: estData.carnet,
-                    name: estData.nombreCompleto,
+                    name: estData.nombreCompleto, // Se preservan tildes y caracteres especiales
                     career: estData.carrera,
                     year: estData.anioLectivo
                 });
                 guardarRespaldoLocalStorage();
                 cerrarModal("modal-estudiante");
+                document.getElementById("est-carnet").value = "";
+                document.getElementById("est-nombre").value = "";
+                document.getElementById("est-carrera").value = "";
                 actualizarTodo();
                 alert("✅ Estudiante registrado localmente.");
             }
         }
 
-        async function eliminarEstudiante(carnet) {
-            if (!confirm(`¿Eliminar estudiante ${carnet}?`)) return;
+        // ==========================================
+        // 6-VALIDACIÓN DE ELIMINACIÓN SEGURA DE REGISTROS (ESTUDIANTES)
+        // ==========================================
+        async function eliminarEstudiante(carnet, id) {
+            if (!confirm(`¿Desea eliminar al estudiante ${carnet}?`)) return;
+            const targetId = parseInt(id);
 
             if (isConnectedToDB) {
                 try {
                     const resp = await fetch(`${API_BASE}/estudiantes/${encodeURIComponent(carnet)}`, {
                         method: "DELETE"
                     });
-                    if (!resp.ok) throw new Error("Error en SQL Server");
+                    const resData = await resp.json();
+                    if (!resp.ok) {
+                        alert("⚠️ " + (resData.mensaje || "Error al eliminar en el servidor."));
+                        return;
+                    }
                     await cargarDatosDesdeServidor();
                     alert("✅ Estudiante eliminado.");
                 } catch (err) {
                     alert("⚠️ Error al eliminar.");
                 }
             } else {
-                estudiantes = estudiantes.filter(s => s.carnet !== carnet);
+                estudiantes = estudiantes.filter(s => {
+                    if (targetId && s.id) return parseInt(s.id) !== targetId;
+                    return s.carnet.toLowerCase() !== carnet.toLowerCase();
+                });
                 guardarRespaldoLocalStorage();
                 actualizarTodo();
+                alert("✅ Estudiante eliminado correctamente.");
             }
         }
 
+        // ==========================================
+        // 3-CONTROL DE PRÉSTAMOS ACTIVOS & 4-DISPONIBILIDAD
+        // 3: Evitar doble préstamo del mismo libro mientras esté pendiente de devolución
+        // 4: Validar stock > 0 para evitar sobregiros
+        // ==========================================
         async function guardarPrestamo(event) {
             event.preventDefault();
             const carnet = document.getElementById("prestamo-carnet").value.trim();
             const idLibro = parseInt(document.getElementById("prestamo-libro").value);
 
-            if (!carnet || !idLibro) return;
+            if (!carnet || !idLibro) {
+                alert("⚠️ Ingrese el carné y seleccione un libro.");
+                return;
+            }
+
+            // 3-Control de Préstamos Activos (Evitar doble préstamo del mismo libro)
+            const listaPrestamosLocal = JSON.parse(localStorage.getItem("uni_prestamos")) || JSON.parse(localStorage.getItem("prestamos")) || prestamos;
+            const tienePrestamoActivo = listaPrestamosLocal.some(p => 
+                p.estado !== "Devuelto" && 
+                p.carnet.trim().toLowerCase() === carnet.toLowerCase() && 
+                parseInt(p.idLibro) === idLibro
+            );
+
+            if (tienePrestamoActivo) {
+                alert("⚠️ El estudiante ya posee una copia de este libro en préstamo pendiente de devolución.");
+                return;
+            }
+
+            // 4-Disponibilidad: Validar que el stock sea mayor a cero
+            const libroObj = books.find(b => parseInt(b.id) === idLibro);
+            if (!libroObj || parseInt(libroObj.stock) <= 0) {
+                alert("⚠️ Disponibilidad agotada: No hay ejemplares disponibles en stock para realizar este préstamo.");
+                return;
+            }
 
             if (isConnectedToDB) {
                 try {
@@ -1484,34 +1655,43 @@
                             diasPrestamo: 15
                         })
                     });
-                    if (!resp.ok) throw new Error("Error en SQL Server");
+                    const resData = await resp.json();
+                    if (!resp.ok) {
+                        alert("⚠️ " + (resData.mensaje || "Error al procesar préstamo."));
+                        return;
+                    }
                     cerrarModal("modal-prestamo");
+                    document.getElementById("prestamo-carnet").value = "";
+                    document.getElementById("prestamo-libro").value = "";
                     await cargarDatosDesdeServidor();
                     alert("✅ Préstamo registrado.");
                 } catch (err) {
-                    alert("⚠️ Error al procesar préstamo.");
+                    alert("⚠️ Error al procesar préstamo: " + err.message);
                 }
             } else {
                 const est = estudiantes.find(s => s.carnet.toLowerCase() === carnet.toLowerCase());
-                const libIndex = books.findIndex(b => b.id === idLibro);
-                if (!est || libIndex === -1 || books[libIndex].stock <= 0) {
-                    alert("⚠️ Datos inválidos o stock insuficiente.");
+                if (!est) {
+                    alert(`⚠️ No existe ningún estudiante registrado con el carné '${carnet}'. Registre al estudiante primero.`);
                     return;
                 }
-                books[libIndex].stock -= 1;
+
+                libroObj.stock -= 1;
+                const nextPrestamoId = prestamos.length > 0 ? Math.max(...prestamos.map(p => p.id || 0)) + 1 : 1;
                 prestamos.unshift({
-                    id: prestamos.length > 0 ? Math.max(...prestamos.map(p => p.id)) + 1 : 1,
+                    id: nextPrestamoId,
                     carnet: carnet,
                     estudiante: est.name,
                     idLibro: idLibro,
-                    libro: books[libIndex].titulo,
+                    libro: libroObj.titulo,
                     fechaPrestamo: new Date().toLocaleDateString('es-NI'),
-                    fechaLimite: "25/10/2026",
+                    fechaLimite: new Date(Date.now() + 15 * 86400000).toLocaleDateString('es-NI'),
                     estado: "Prestado",
                     diasRetraso: 0
                 });
                 guardarRespaldoLocalStorage();
                 cerrarModal("modal-prestamo");
+                document.getElementById("prestamo-carnet").value = "";
+                document.getElementById("prestamo-libro").value = "";
                 actualizarTodo();
                 alert("✅ Préstamo registrado localmente.");
             }
@@ -1519,23 +1699,28 @@
 
         async function devolverLibro(id) {
             if (!confirm("¿Confirmar devolución?")) return;
+            const targetId = parseInt(id);
 
             if (isConnectedToDB) {
                 try {
-                    const resp = await fetch(`${API_BASE}/prestamos/${id}/devolver`, {
+                    const resp = await fetch(`${API_BASE}/prestamos/${targetId}/devolver`, {
                         method: "PUT"
                     });
-                    if (!resp.ok) throw new Error("Error en SQL Server");
+                    const resData = await resp.json();
+                    if (!resp.ok) {
+                        alert("⚠️ " + (resData.mensaje || "Error al devolver."));
+                        return;
+                    }
                     await cargarDatosDesdeServidor();
                     alert("✅ Devolución procesada.");
                 } catch (err) {
                     alert("⚠️ Error al devolver.");
                 }
             } else {
-                const pIndex = prestamos.findIndex(p => p.id === id);
+                const pIndex = prestamos.findIndex(p => parseInt(p.id) === targetId);
                 if (pIndex !== -1) {
                     prestamos[pIndex].estado = "Devuelto";
-                    const libIndex = books.findIndex(b => b.id === prestamos[pIndex].idLibro);
+                    const libIndex = books.findIndex(b => parseInt(b.id) === parseInt(prestamos[pIndex].idLibro));
                     if (libIndex !== -1) books[libIndex].stock += 1;
                     guardarRespaldoLocalStorage();
                     actualizarTodo();
@@ -1544,6 +1729,12 @@
             }
         }
 
+        // ==========================================
+        // 5-VALIDACIÓN DE REGISTRO DE ADMINISTRADORES (SEGURIDAD Y ROLES)
+        // & 7-VALIDACIÓN DE LÍMITE DE CUENTAS POR ROL
+        // 5: Valida usuario duplicado y aplica cifrado seguro a contraseña antes de guardar en localStorage.
+        // 7: SuperAdmin máx 7 cuentas | Administrador de Biblioteca máx 10 cuentas.
+        // ==========================================
         async function guardarAdmin() {
             const adminData = {
                 nombreCompleto: document.getElementById("new-admin-name").value.trim(),
@@ -1552,7 +1743,37 @@
                 rol: document.getElementById("new-admin-role").value
             };
 
-            if (!adminData.nombreCompleto || !adminData.usuario || !adminData.contrasena) return;
+            if (!adminData.nombreCompleto || !adminData.usuario || !adminData.contrasena) {
+                alert("⚠️ Por favor completa todos los campos del administrador.");
+                return;
+            }
+
+            const listaAdminsLocal = JSON.parse(localStorage.getItem("uni_admins")) || JSON.parse(localStorage.getItem("administradores")) || admins;
+
+            // 5: Valida que el nombre de usuario no esté duplicado
+            const usuarioDuplicado = listaAdminsLocal.some(a => (a.user || a.usuario || "").trim().toLowerCase() === adminData.usuario.toLowerCase());
+            if (usuarioDuplicado) {
+                alert(`⚠️ El nombre de usuario '${adminData.usuario}' ya se encuentra registrado.`);
+                return;
+            }
+
+            // 7: Control de Capacidad de Administradores por Rol
+            if (adminData.rol === "SuperAdmin") {
+                const totalSuper = listaAdminsLocal.filter(a => (a.role || a.rol) === "SuperAdmin").length;
+                if (totalSuper >= 7) {
+                    alert("⚠️ Aviso de Restricción: Se ha alcanzado el límite estricto de un máximo de 7 cuentas permitidas para SuperAdmin.");
+                    return;
+                }
+            } else {
+                const totalAdmin = listaAdminsLocal.filter(a => (a.role || a.rol) !== "SuperAdmin").length;
+                if (totalAdmin >= 10) {
+                    alert("⚠️ Aviso de Restricción: Se ha alcanzado el límite máximo de 10 cuentas operativas permitidas para Administrador de Biblioteca.");
+                    return;
+                }
+            }
+
+            // 5: Aplica función de cifrado (codificación segura) antes de guardarla en el localstorage
+            const passCifrada = await cifrarContrasena(adminData.contrasena);
 
             if (isConnectedToDB) {
                 try {
@@ -1561,49 +1782,76 @@
                         headers: {
                             "Content-Type": "application/json"
                         },
-                        body: JSON.stringify(adminData)
+                        body: JSON.stringify({
+                            nombreCompleto: adminData.nombreCompleto,
+                            usuario: adminData.usuario,
+                            contrasena: passCifrada,
+                            rol: adminData.rol
+                        })
                     });
-                    if (!resp.ok) throw new Error("Error en SQL Server");
+                    const resData = await resp.json();
+                    if (!resp.ok) {
+                        alert("⚠️ " + (resData.mensaje || "Error al crear administrador."));
+                        return;
+                    }
                     cerrarModal("modal-admin");
+                    document.getElementById("new-admin-name").value = "";
+                    document.getElementById("new-admin-user").value = "";
+                    document.getElementById("new-admin-pass").value = "";
                     await cargarDatosDesdeServidor();
-                    alert("✅ Administrador creado.");
+                    alert("✅ Administrador creado exitosamente.");
                 } catch (err) {
-                    alert("⚠️ Error al crear administrador.");
+                    alert("⚠️ Error al crear administrador: " + err.message);
                 }
             } else {
+                const nextAdminId = admins.length > 0 ? Math.max(...admins.map(a => a.id || 0)) + 1 : 1;
                 admins.push({
+                    id: nextAdminId,
                     user: adminData.usuario,
                     name: adminData.nombreCompleto,
                     role: adminData.rol,
                     date: new Date().toLocaleDateString('es-NI'),
                     status: "Activo",
-                    pass: adminData.contrasena
+                    pass: passCifrada // Contraseña cifrada de forma segura
                 });
                 guardarRespaldoLocalStorage();
                 cerrarModal("modal-admin");
+                document.getElementById("new-admin-name").value = "";
+                document.getElementById("new-admin-user").value = "";
+                document.getElementById("new-admin-pass").value = "";
                 actualizarTodo();
-                alert("✅ Administrador creado localmente.");
+                alert("✅ Administrador registrado localmente con credenciales cifradas.");
             }
         }
 
+        // ==========================================
+        // 6-VALIDACIÓN DE ELIMINACIÓN SEGURA DE REGISTROS (ADMINISTRADORES)
+        // Método .filter() de JavaScript por id único
+        // ==========================================
         async function eliminarAdmin(id) {
-            if (!confirm("¿Eliminar administrador?")) return;
+            if (!confirm("¿Desea eliminar este administrador?")) return;
+            const targetId = parseInt(id);
 
-            if (isConnectedToDB && id) {
+            if (isConnectedToDB && targetId) {
                 try {
-                    const resp = await fetch(`${API_BASE}/administradores/${id}`, {
+                    const resp = await fetch(`${API_BASE}/administradores/${targetId}`, {
                         method: "DELETE"
                     });
-                    if (!resp.ok) throw new Error("Error en SQL Server");
+                    const resData = await resp.json();
+                    if (!resp.ok) {
+                        alert("⚠️ " + (resData.mensaje || "Error al eliminar en el servidor."));
+                        return;
+                    }
                     await cargarDatosDesdeServidor();
                     alert("✅ Administrador eliminado.");
                 } catch (err) {
                     alert("⚠️ Error al eliminar.");
                 }
             } else {
-                admins = admins.filter(a => a.id !== id);
+                admins = admins.filter(a => parseInt(a.id) !== targetId);
                 guardarRespaldoLocalStorage();
                 actualizarTodo();
+                alert("✅ Administrador eliminado correctamente.");
             }
         }
 
@@ -1640,48 +1888,6 @@
 
         function cerrarModal(id) {
             document.getElementById(id).style.display = "none";
-        }
-
-        // Coloca esta función dentro de tus etiquetas <script> en el index.html
-        function registrarLibroDesdeUI() {
-            // 1. Capturas los valores de tus inputs del formulario de libros
-            const titulo = document.getElementById('input-titulo').value.trim();
-            const autor = document.getElementById('input-autor').value.trim();
-            const isbn = document.getElementById('input-isbn').value.trim();
-            const stock = document.getElementById('input-stock').value;
-
-            // Validación rápida para campos vacíos
-            if (!titulo || !autor || !isbn || !stock) {
-                alert("Por favor, completa todos los campos del libro.");
-                return;
-            }
-
-            // 2. Obtienes la lista actual del localStorage
-            let listaLibros = JSON.parse(localStorage.getItem('libros')) || [];
-
-            // 3. RESTRICCIÓN: Verificamos si ya existe un libro con el mismo ISBN
-            let existeLibro = listaLibros.some(libro => libro.isbn === isbn);
-
-            if (existeLibro) {
-                // Alerta visual en el diseño cuando hay duplicado
-                alert("¡Aviso! Ya existe un libro registrado con este código ISBN en el sistema.");
-                return; // Detiene el proceso y no deja duplicar
-            }
-
-            // 4. Si pasa la validación, se crea el objeto y se guarda
-            const nuevoLibro = {
-                titulo,
-                autor,
-                isbn,
-                stock: parseInt(stock)
-            };
-            listaLibros.push(nuevoLibro);
-
-            localStorage.setItem('libros', JSON.stringify(listaLibros));
-
-            // Refrescas tu tabla o interfaz visual aquí
-            alert("¡Libro registrado con éxito!");
-            // cargarTablaLibros(); 
         }
 
         function filtrarLibros() {

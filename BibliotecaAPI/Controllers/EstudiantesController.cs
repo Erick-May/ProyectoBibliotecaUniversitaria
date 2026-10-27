@@ -39,10 +39,10 @@ public class EstudiantesController : ControllerBase
                 return BadRequest(new { mensaje = "El carnet y el nombre completo son obligatorios." });
             }
 
-            var ok = await _db.CrearEstudianteAsync(estudiante);
-            if (!ok) return BadRequest(new { mensaje = "No se pudo registrar el estudiante. Puede que el carnet ya exista." });
+            var (ok, mensaje) = await _db.CrearEstudianteAsync(estudiante);
+            if (!ok) return BadRequest(new { mensaje });
 
-            return Ok(new { mensaje = "Estudiante registrado exitosamente.", estudiante });
+            return Ok(new { mensaje, estudiante });
         }
         catch (Exception ex)
         {
