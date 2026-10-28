@@ -161,6 +161,16 @@ public class DatabaseService
             throw new InvalidOperationException("Ya existe un registro correspondiente con este ISBN y título en el sistema.");
         }
 
+        // Validación de Unicidad por Título
+        await using var cmdCheckTitulo = conn.CreateCommand();
+        cmdCheckTitulo.CommandText = "SELECT COUNT(*) FROM dbo.Libros WHERE LOWER(Titulo) = LOWER(@Titulo);";
+        cmdCheckTitulo.Parameters.AddWithValue("@Titulo", libro.Titulo.Trim());
+        var countTitulo = (int)(await cmdCheckTitulo.ExecuteScalarAsync() ?? 0);
+        if (countTitulo > 0)
+        {
+            throw new InvalidOperationException($"Ya existe un libro registrado con el título '{libro.Titulo}' en el sistema.");
+        }
+
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = @"
             INSERT INTO dbo.Libros (Isbn, Titulo, Autor, AnioPublicacion, Categoria, Stock)
@@ -182,6 +192,17 @@ public class DatabaseService
     {
         await using var conn = CreateConnection();
         await conn.OpenAsync();
+
+        // Validar si otro libro ya tiene el mismo título
+        await using var cmdCheckTitulo = conn.CreateCommand();
+        cmdCheckTitulo.CommandText = "SELECT COUNT(*) FROM dbo.Libros WHERE LOWER(Titulo) = LOWER(@Titulo) AND Id <> @Id;";
+        cmdCheckTitulo.Parameters.AddWithValue("@Titulo", libro.Titulo.Trim());
+        cmdCheckTitulo.Parameters.AddWithValue("@Id", libro.Id);
+        var countTitulo = (int)(await cmdCheckTitulo.ExecuteScalarAsync() ?? 0);
+        if (countTitulo > 0)
+        {
+            throw new InvalidOperationException($"Ya existe un libro registrado con el título '{libro.Titulo}' en el sistema.");
+        }
 
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = @"

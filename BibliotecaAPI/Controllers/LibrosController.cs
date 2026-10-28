@@ -79,6 +79,10 @@ public class LibrosController : ControllerBase
 
             return Ok(new { mensaje = "Libro actualizado correctamente.", libro });
         }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { mensaje = ex.Message });
+        }
         catch (Exception ex)
         {
             return StatusCode(500, new { mensaje = $"Error al actualizar libro: {ex.Message}" });

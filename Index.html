@@ -1397,14 +1397,25 @@
 
             // 1-Evaluación de coincidencia exacta por ISBN y título en localstorage
             const librosLocales = JSON.parse(localStorage.getItem("uni_books")) || JSON.parse(localStorage.getItem("libros")) || books;
-            const yaExisteLibro = librosLocales.some(b => 
+            const yaExisteIsbnYTitulo = librosLocales.some(b => 
                 (id === 0 || parseInt(b.id) !== id) &&
                 b.isbn.trim().toLowerCase() === libroData.isbn.toLowerCase() && 
                 b.titulo.trim().toLowerCase() === libroData.titulo.toLowerCase()
             );
 
-            if (yaExisteLibro) {
+            if (yaExisteIsbnYTitulo) {
                 alert("Ya existe un registro correspondiente con este ISBN y título en el sistema.");
+                return;
+            }
+
+            // Validación por Título en el catálogo de libros
+            const yaExisteTitulo = librosLocales.some(b => 
+                (id === 0 || parseInt(b.id) !== id) &&
+                b.titulo.trim().toLowerCase() === libroData.titulo.toLowerCase()
+            );
+
+            if (yaExisteTitulo) {
+                alert(`⚠️ Ya existe un libro registrado con el título "${libroData.titulo}" en el sistema.`);
                 return;
             }
 
@@ -1423,7 +1434,7 @@
 
                     const resData = await response.json();
                     if (!response.ok) {
-                        alert(resData.mensaje || "Ya existe un registro correspondiente con este ISBN y título en el sistema.");
+                        alert("⚠️ " + (resData.mensaje || "Ya existe un libro con ese título o ISBN en el sistema."));
                         return;
                     }
 
